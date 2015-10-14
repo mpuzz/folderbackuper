@@ -34,6 +34,7 @@ namespace SharedTest
             TestFileStream.Close();
 
             File.Delete("version.bin");
+            System.IO.Directory.Delete("asd", true);
 
             Assert.AreEqual(v2, v);
         }

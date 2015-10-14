@@ -7,7 +7,7 @@ using System.ServiceModel;
 namespace ServerTests
 {
     [TestClass]
-    public class ServerTests
+    public class AuthenticationTests
     {
         [TestMethod]
         public void CorrectAuthenticationTest()

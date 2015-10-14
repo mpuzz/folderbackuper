@@ -11,7 +11,7 @@ namespace FolderBackup.Server
     [Serializable()]
     public class PhysicFilesList
     {
-        private List<PhysicFile> list;
+        public List<PhysicFile> list;
 
         public PhysicFilesList() {
             list = new List<PhysicFile>();
@@ -20,6 +20,11 @@ namespace FolderBackup.Server
         public void add(PhysicFile pf)
         {
             list.Add(pf);
+        }
+
+        public void add(PhysicFilesList pfl)
+        {
+            list.AddRange(pfl.list);
         }
 
         public void delete(PhysicFile pf)

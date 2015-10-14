@@ -19,6 +19,7 @@ namespace FolderBackup.Server
         static private int nInstance = 0;
         private List<FBFile> necessaryFiles;
         private PhysicFilesList realFiles;
+        private PhysicFilesList uploadedFiles;
 
         public User user;
         public FBVersion inSyncVersion { get; set; }
@@ -74,10 +75,22 @@ namespace FolderBackup.Server
             try
             {
                 this.user = User.authUser(username, password);
-               /* Stream FilesStream = File.OpenRead(this.user.rootDirectory + "\files.bin");
-                BinaryFormatter deserializer = new BinaryFormatter();
-                this.realFiles = (PhysicFilesList)deserializer.Deserialize(FilesStream);
-                FilesStream.Close();*/
+
+                if (!File.Exists(this.user.rootDirectory + @"\files.bin"))
+                {
+                    this.realFiles = new PhysicFilesList();
+                    Stream FilesStream = File.OpenWrite(this.user.rootDirectory + @"\files.bin");
+                    BinaryFormatter serializer = new BinaryFormatter();
+                    serializer.Serialize(FilesStream, realFiles);
+                    FilesStream.Close();
+                }
+                else
+                {
+                    Stream FilesStream1 = File.OpenRead(this.user.rootDirectory + @"\files.bin");
+                    BinaryFormatter deserializer = new BinaryFormatter();
+                    this.realFiles = (PhysicFilesList)deserializer.Deserialize(FilesStream1);
+                    FilesStream1.Close();
+                }
             }
             catch
             {
@@ -101,8 +114,9 @@ namespace FolderBackup.Server
 
                 return serVersion;
             }
-            catch
+            catch (Exception e)
             {
+                throw e;
                 throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.ROOTDIRECTORYNOTFOUND));
             }
         }
@@ -130,7 +144,7 @@ namespace FolderBackup.Server
                 if (dt2 > dtl) last = di;
             }
 
-            Stream TestFileStream = File.OpenRead(last.FullName + "\version.bin");
+            Stream TestFileStream = File.OpenRead(last.FullName + @"\version.bin");
             BinaryFormatter deserializer = new BinaryFormatter();
             FBVersion version = (FBVersion)deserializer.Deserialize(TestFileStream);
             TestFileStream.Close();
@@ -149,7 +163,7 @@ namespace FolderBackup.Server
             this.inSyncVersion = FBVersion.deserialize(newVersion.encodedVersion);
 
             String newDirPath = this.user.rootDirectory.FullName;
-            newDirPath += this.inSyncVersion.timestamp.ToString("yyyy_MM_dd__HH_mm_ss", CultureInfo.InvariantCulture);
+            newDirPath += "\\" + this.inSyncVersion.timestamp.ToString("yyyy_MM_dd__HH_mm_ss", CultureInfo.InvariantCulture);
             this.transactDir = Directory.CreateDirectory(newDirPath);
             if (this.transactDir == null)
                 throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.CREATEVERSIONDIRECTORYFAILED));
@@ -161,7 +175,7 @@ namespace FolderBackup.Server
 
         private void checkTransactionIsNotEnabled()
         {
-            if (!this.transactionEnabled)
+            if (this.transactionEnabled)
                 throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.TRANSACTIONENABLED));
         }
         private void checkTransactionIsEnabled()
@@ -181,11 +195,18 @@ namespace FolderBackup.Server
 
             if (this.necessaryFiles.Count == 0)
             {
-                Stream TestFileStream = File.Create(this.transactDir.FullName + "\version.bin");
+                Stream FileStream = File.Create(this.transactDir.FullName + @"\version.bin");
                 BinaryFormatter serializer = new BinaryFormatter();
-                serializer.Serialize(TestFileStream, this.inSyncVersion);
-                TestFileStream.Close();
+                serializer.Serialize(FileStream, this.inSyncVersion);
+                FileStream.Close();
 
+                realFiles.add(this.uploadedFiles);
+
+                FileStream = File.OpenWrite(this.user.rootDirectory + @"\files.bin");
+                serializer.Serialize(FileStream, realFiles);
+                FileStream.Close();
+
+                this.uploadedFiles = null;
                 this.transactDir = null;
                 this.inSyncVersion = null;
                 this.transactionEnabled = false;
@@ -206,14 +227,21 @@ namespace FolderBackup.Server
                 this.transactDir.Delete(true);
                 this.transactDir = null;
             }
+
             this.inSyncVersion = null;
             this.transactionEnabled = false;
+            foreach (PhysicFile pf in this.uploadedFiles.list)
+            {
+                File.Delete(pf.getRealFileInfo().FullName);
+            }
+            this.uploadedFiles = null;
+
             return true;
         }
 
         public string uploadFile(Stream fileStream)
         {
-            string path = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture);
+            string path = this.user.rootDirectory.FullName + "\\" + DateTime.UtcNow.ToString("yyyy_MM_dd_HH_mm_ss_fff", CultureInfo.InvariantCulture);
             FBFile newFile;
             FBFileBuilder fb;
 
@@ -227,8 +255,9 @@ namespace FolderBackup.Server
                 throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.FILENOTNECESSARY));
             }
 
-            this.necessaryFiles.Remove(newFile);
+            this.uploadedFiles.add(new PhysicFile(newFile, path));
 
+            this.necessaryFiles.Remove(newFile);
             return newFile.hash;
         }
 
@@ -242,8 +271,6 @@ namespace FolderBackup.Server
 
         private static void CopyStream(System.IO.Stream instream, System.IO.Stream outstream)
         {
-            //read from the input stream in 4K chunks
-            //and save to output stream
             const int bufferLen = 4096;
             byte[] buffer = new byte[bufferLen];
             int count = 0;
@@ -261,6 +288,7 @@ namespace FolderBackup.Server
             this.checkTransactionIsEnabled();
 
             necessaryFiles = FBVersion.getNecessaryFilesToUpgrade(this.inSyncVersion, this.realFiles.filesAlreadyRepresented());
+            this.uploadedFiles = new PhysicFilesList();
 
             byte[][] ret = new byte[necessaryFiles.Count][];
             for (int i = 0; i < necessaryFiles.Count; ++i)
