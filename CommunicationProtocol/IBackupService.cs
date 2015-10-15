@@ -36,8 +36,6 @@ namespace FolderBackup.CommunicationProtocol
 
     }
 
-    // Per aggiungere tipi compositi alle operazioni del servizio utilizzare un contratto di dati come descritto nell'esempio seguente.
-    // È possibile aggiungere file XSD nel progetto. Dopo la compilazione del progetto è possibile utilizzare direttamente i tipi di dati definiti qui con lo spazio dei nomi "CommunicationProtocol.ContractType".
     [DataContract]
     public class SerializedVersion
     {

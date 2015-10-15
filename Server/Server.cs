@@ -76,12 +76,19 @@ namespace FolderBackup.Server
             {
                 this.user = User.authUser(username, password);
 
-                if (!File.Exists(this.user.rootDirectory + @"\files.bin"))
+                if (!File.Exists(this.user.rootDirectory + @"\files.bin")) //primo accesso
                 {
                     this.realFiles = new PhysicFilesList();
                     Stream FilesStream = File.OpenWrite(this.user.rootDirectory + @"\files.bin");
                     BinaryFormatter serializer = new BinaryFormatter();
                     serializer.Serialize(FilesStream, realFiles);
+                    FilesStream.Close();
+
+                    user.rootDirectory.CreateSubdirectory("1970_01_01__00_00_00");
+                    FBVersionBuilder vb = new FBVersionBuilder(user.rootDirectory.FullName + @"\1970_01_01__00_00_00");
+                    FBVersion v = (FBVersion) vb.generate();
+                    FilesStream = File.OpenWrite(user.rootDirectory.FullName + @"\1970_01_01__00_00_00\version.bin");
+                    serializer.Serialize(FilesStream, v);
                     FilesStream.Close();
                 }
                 else
@@ -92,8 +99,9 @@ namespace FolderBackup.Server
                     FilesStream1.Close();
                 }
             }
-            catch
+            catch (Exception e)
             {
+                Console.WriteLine(e.Message);
                 throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.AUTHENTICATIONFAILED));
             }
             
@@ -116,7 +124,6 @@ namespace FolderBackup.Server
             }
             catch (Exception e)
             {
-                throw e;
                 throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.ROOTDIRECTORYNOTFOUND));
             }
         }
@@ -159,8 +166,15 @@ namespace FolderBackup.Server
             if (this.transactionEnabled)
                 throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.TRANSACTIONALREADYENABLED));
 
+
+            FBVersion vers = FBVersion.deserialize(newVersion.encodedVersion);
+            if (vers.Equals(this.getCurrentVersion()))
+            {
+                return false;
+            }
+
             this.transactionEnabled = true;
-            this.inSyncVersion = FBVersion.deserialize(newVersion.encodedVersion);
+            this.inSyncVersion = vers;
 
             String newDirPath = this.user.rootDirectory.FullName;
             newDirPath += "\\" + this.inSyncVersion.timestamp.ToString("yyyy_MM_dd__HH_mm_ss", CultureInfo.InvariantCulture);

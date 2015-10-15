@@ -18,8 +18,6 @@ namespace FolderBackup.Server
 
             try
             {
-                Console.WriteLine(DatabaseManager.getInstance().getUser("test1", "b444ac06613fc8d63795be9ad0beaf55011936ac"));
-                Console.WriteLine(User.authUser("test1", "b444ac06613fc8d63795be9ad0beaf55011936ac").rootDirectory);
                 // Step 5 Start the service.
                 selfHost.Open();
                 Console.WriteLine("The service is ready.");

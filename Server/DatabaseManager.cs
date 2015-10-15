@@ -51,7 +51,7 @@ namespace FolderBackup.Server
             System.Buffer.BlockCopy(password.ToCharArray(), 0, bytes, 0, bytes.Length);
             sha1.ComputeHash(bytes);
             password = System.Text.Encoding.Default.GetString(sha1.Hash);
-           */cmd.CommandText = "SELECT * FROM users WHERE username like @username AND password like @password";
+           */cmd.CommandText = "SELECT * FROM users WHERE username like @username AND password like sha1(@password)";
             cmd.Prepare();
             cmd.Parameters.AddWithValue("@username", username);
             cmd.Parameters.AddWithValue("@password", password);
