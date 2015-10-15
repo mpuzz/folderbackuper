@@ -10,6 +10,7 @@ using FolderBackup.Shared;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Globalization;
 using System.Security.Cryptography;
+using System.Security.AccessControl;
 
 namespace FolderBackup.Server
 {
@@ -23,8 +24,6 @@ namespace FolderBackup.Server
         {
             
         }
-
-        
         
         public string auth(string username, string password)
         {
@@ -103,13 +102,40 @@ namespace FolderBackup.Server
             string token = "";
             char[] chars = new char[20];
 
-            StreamReader sr = new StreamReader(fileStream, Encoding.Default);
+            if(!Directory.Exists("tmp")) Directory.CreateDirectory("tmp");
+            SaveStreamToFile(fileStream, "tmp\\prova");
+            fileStream.Close();
+
+            FileStream fs = new FileStream("tmp\\prova", FileMode.Open, FileAccess.Read);
+
+            StreamReader sr = new StreamReader(fs, Encoding.Default);
             sr.Read(chars, 0, 20);
             foreach (char c in chars)
             {
                 token += c;
             }
-            return Server.getSessionByToken(token).uploadFile(fileStream);
+            return Server.getSessionByToken(token).uploadFile(fs);
+        }
+
+        private static void SaveStreamToFile(System.IO.Stream stream, string filePath)
+        {
+            FileStream outstream = File.Open(filePath, FileMode.Create, FileAccess.Write);
+            CopyStream(stream, outstream);
+            outstream.Close();
+            stream.Close();
+        }
+
+        private static void CopyStream(System.IO.Stream instream, System.IO.Stream outstream)
+        {
+            const int bufferLen = 4096;
+            byte[] buffer = new byte[bufferLen];
+            int count = 0;
+            int bytecount = 0;
+            while ((count = instream.Read(buffer, 0, bufferLen)) > 0)
+            {
+                outstream.Write(buffer, 0, count);
+                bytecount += count;
+            }
         }
 
         public byte[][] getFilesToUpload(string token)

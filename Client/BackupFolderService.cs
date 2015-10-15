@@ -11,18 +11,18 @@
 namespace FolderBackup.CommunicationProtocol
 {
     using System.Runtime.Serialization;
-    
-    
+
+
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="SerializedVersion", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
+    [System.Runtime.Serialization.DataContractAttribute(Name = "SerializedVersion", Namespace = "http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
     public partial class SerializedVersion : object, System.Runtime.Serialization.IExtensibleDataObject
     {
-        
+
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
-        
+
         private byte[] encodedVersionField;
-        
+
         public System.Runtime.Serialization.ExtensionDataObject ExtensionData
         {
             get
@@ -34,7 +34,7 @@ namespace FolderBackup.CommunicationProtocol
                 this.extensionDataField = value;
             }
         }
-        
+
         [System.Runtime.Serialization.DataMemberAttribute()]
         public byte[] encodedVersion
         {
@@ -48,17 +48,17 @@ namespace FolderBackup.CommunicationProtocol
             }
         }
     }
-    
+
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="ServiceErrorMessage", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
+    [System.Runtime.Serialization.DataContractAttribute(Name = "ServiceErrorMessage", Namespace = "http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
     public partial class ServiceErrorMessage : object, System.Runtime.Serialization.IExtensibleDataObject
     {
-        
+
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
-        
+
         private int typeField;
-        
+
         public System.Runtime.Serialization.ExtensionDataObject ExtensionData
         {
             get
@@ -70,7 +70,7 @@ namespace FolderBackup.CommunicationProtocol
                 this.extensionDataField = value;
             }
         }
-        
+
         [System.Runtime.Serialization.DataMemberAttribute()]
         public int type
         {
@@ -88,52 +88,52 @@ namespace FolderBackup.CommunicationProtocol
 
 
 [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-[System.ServiceModel.ServiceContractAttribute(ConfigurationName="IBackupService")]
+[System.ServiceModel.ServiceContractAttribute(ConfigurationName = "IBackupService")]
 public interface IBackupService
 {
-    
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/auth", ReplyAction="http://tempuri.org/IBackupService/authResponse")]
-    [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action="http://tempuri.org/IBackupService/authServiceErrorMessageFault", Name="ServiceErrorMessage", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
-    bool auth(string username, string password);
-    
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/auth", ReplyAction="http://tempuri.org/IBackupService/authResponse")]
-    System.Threading.Tasks.Task<bool> authAsync(string username, string password);
-    
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/getCurrentVersion", ReplyAction="http://tempuri.org/IBackupService/getCurrentVersionResponse")]
-    FolderBackup.CommunicationProtocol.SerializedVersion getCurrentVersion();
-    
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/getCurrentVersion", ReplyAction="http://tempuri.org/IBackupService/getCurrentVersionResponse")]
-    System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.SerializedVersion> getCurrentVersionAsync();
-    
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/newTransaction", ReplyAction="http://tempuri.org/IBackupService/newTransactionResponse")]
-    bool newTransaction(FolderBackup.CommunicationProtocol.SerializedVersion newVersion);
-    
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/newTransaction", ReplyAction="http://tempuri.org/IBackupService/newTransactionResponse")]
-    System.Threading.Tasks.Task<bool> newTransactionAsync(FolderBackup.CommunicationProtocol.SerializedVersion newVersion);
-    
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/commit", ReplyAction="http://tempuri.org/IBackupService/commitResponse")]
-    bool commit();
-    
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/commit", ReplyAction="http://tempuri.org/IBackupService/commitResponse")]
-    System.Threading.Tasks.Task<bool> commitAsync();
-    
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/rollback", ReplyAction="http://tempuri.org/IBackupService/rollbackResponse")]
-    bool rollback();
-    
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/rollback", ReplyAction="http://tempuri.org/IBackupService/rollbackResponse")]
-    System.Threading.Tasks.Task<bool> rollbackAsync();
-    
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/uploadFile", ReplyAction="http://tempuri.org/IBackupService/uploadFileResponse")]
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/auth", ReplyAction = "http://tempuri.org/IBackupService/authResponse")]
+    [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action = "http://tempuri.org/IBackupService/authServiceErrorMessageFault", Name = "ServiceErrorMessage", Namespace = "http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
+    string auth(string username, string password);
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/auth", ReplyAction = "http://tempuri.org/IBackupService/authResponse")]
+    System.Threading.Tasks.Task<string> authAsync(string username, string password);
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/getCurrentVersion", ReplyAction = "http://tempuri.org/IBackupService/getCurrentVersionResponse")]
+    FolderBackup.CommunicationProtocol.SerializedVersion getCurrentVersion(string token);
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/getCurrentVersion", ReplyAction = "http://tempuri.org/IBackupService/getCurrentVersionResponse")]
+    System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.SerializedVersion> getCurrentVersionAsync(string token);
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/newTransaction", ReplyAction = "http://tempuri.org/IBackupService/newTransactionResponse")]
+    bool newTransaction(string token, FolderBackup.CommunicationProtocol.SerializedVersion newVersion);
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/newTransaction", ReplyAction = "http://tempuri.org/IBackupService/newTransactionResponse")]
+    System.Threading.Tasks.Task<bool> newTransactionAsync(string token, FolderBackup.CommunicationProtocol.SerializedVersion newVersion);
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/commit", ReplyAction = "http://tempuri.org/IBackupService/commitResponse")]
+    bool commit(string token);
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/commit", ReplyAction = "http://tempuri.org/IBackupService/commitResponse")]
+    System.Threading.Tasks.Task<bool> commitAsync(string token);
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/rollback", ReplyAction = "http://tempuri.org/IBackupService/rollbackResponse")]
+    bool rollback(string token);
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/rollback", ReplyAction = "http://tempuri.org/IBackupService/rollbackResponse")]
+    System.Threading.Tasks.Task<bool> rollbackAsync(string token);
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/uploadFile", ReplyAction = "http://tempuri.org/IBackupService/uploadFileResponse")]
     string uploadFile(System.IO.Stream file);
-    
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/uploadFile", ReplyAction="http://tempuri.org/IBackupService/uploadFileResponse")]
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/uploadFile", ReplyAction = "http://tempuri.org/IBackupService/uploadFileResponse")]
     System.Threading.Tasks.Task<string> uploadFileAsync(System.IO.Stream file);
-    
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/getFilesToUpload", ReplyAction="http://tempuri.org/IBackupService/getFilesToUploadResponse")]
-    byte[][] getFilesToUpload();
-    
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/getFilesToUpload", ReplyAction="http://tempuri.org/IBackupService/getFilesToUploadResponse")]
-    System.Threading.Tasks.Task<byte[][]> getFilesToUploadAsync();
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/getFilesToUpload", ReplyAction = "http://tempuri.org/IBackupService/getFilesToUploadResponse")]
+    byte[][] getFilesToUpload(string token);
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/getFilesToUpload", ReplyAction = "http://tempuri.org/IBackupService/getFilesToUploadResponse")]
+    System.Threading.Tasks.Task<byte[][]> getFilesToUploadAsync(string token);
 }
 
 [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -145,98 +145,98 @@ public interface IBackupServiceChannel : IBackupService, System.ServiceModel.ICl
 [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
 public partial class BackupServiceClient : System.ServiceModel.ClientBase<IBackupService>, IBackupService
 {
-    
+
     public BackupServiceClient()
     {
     }
-    
-    public BackupServiceClient(string endpointConfigurationName) : 
-            base(endpointConfigurationName)
+
+    public BackupServiceClient(string endpointConfigurationName) :
+        base(endpointConfigurationName)
     {
     }
-    
-    public BackupServiceClient(string endpointConfigurationName, string remoteAddress) : 
-            base(endpointConfigurationName, remoteAddress)
+
+    public BackupServiceClient(string endpointConfigurationName, string remoteAddress) :
+        base(endpointConfigurationName, remoteAddress)
     {
     }
-    
-    public BackupServiceClient(string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) : 
-            base(endpointConfigurationName, remoteAddress)
+
+    public BackupServiceClient(string endpointConfigurationName, System.ServiceModel.EndpointAddress remoteAddress) :
+        base(endpointConfigurationName, remoteAddress)
     {
     }
-    
-    public BackupServiceClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) : 
-            base(binding, remoteAddress)
+
+    public BackupServiceClient(System.ServiceModel.Channels.Binding binding, System.ServiceModel.EndpointAddress remoteAddress) :
+        base(binding, remoteAddress)
     {
     }
-    
-    public bool auth(string username, string password)
+
+    public string auth(string username, string password)
     {
         return base.Channel.auth(username, password);
     }
-    
-    public System.Threading.Tasks.Task<bool> authAsync(string username, string password)
+
+    public System.Threading.Tasks.Task<string> authAsync(string username, string password)
     {
         return base.Channel.authAsync(username, password);
     }
-    
-    public FolderBackup.CommunicationProtocol.SerializedVersion getCurrentVersion()
+
+    public FolderBackup.CommunicationProtocol.SerializedVersion getCurrentVersion(string token)
     {
-        return base.Channel.getCurrentVersion();
+        return base.Channel.getCurrentVersion(token);
     }
-    
-    public System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.SerializedVersion> getCurrentVersionAsync()
+
+    public System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.SerializedVersion> getCurrentVersionAsync(string token)
     {
-        return base.Channel.getCurrentVersionAsync();
+        return base.Channel.getCurrentVersionAsync(token);
     }
-    
-    public bool newTransaction(FolderBackup.CommunicationProtocol.SerializedVersion newVersion)
+
+    public bool newTransaction(string token, FolderBackup.CommunicationProtocol.SerializedVersion newVersion)
     {
-        return base.Channel.newTransaction(newVersion);
+        return base.Channel.newTransaction(token, newVersion);
     }
-    
-    public System.Threading.Tasks.Task<bool> newTransactionAsync(FolderBackup.CommunicationProtocol.SerializedVersion newVersion)
+
+    public System.Threading.Tasks.Task<bool> newTransactionAsync(string token, FolderBackup.CommunicationProtocol.SerializedVersion newVersion)
     {
-        return base.Channel.newTransactionAsync(newVersion);
+        return base.Channel.newTransactionAsync(token, newVersion);
     }
-    
-    public bool commit()
+
+    public bool commit(string token)
     {
-        return base.Channel.commit();
+        return base.Channel.commit(token);
     }
-    
-    public System.Threading.Tasks.Task<bool> commitAsync()
+
+    public System.Threading.Tasks.Task<bool> commitAsync(string token)
     {
-        return base.Channel.commitAsync();
+        return base.Channel.commitAsync(token);
     }
-    
-    public bool rollback()
+
+    public bool rollback(string token)
     {
-        return base.Channel.rollback();
+        return base.Channel.rollback(token);
     }
-    
-    public System.Threading.Tasks.Task<bool> rollbackAsync()
+
+    public System.Threading.Tasks.Task<bool> rollbackAsync(string token)
     {
-        return base.Channel.rollbackAsync();
+        return base.Channel.rollbackAsync(token);
     }
-    
+
     public string uploadFile(System.IO.Stream file)
     {
         return base.Channel.uploadFile(file);
     }
-    
+
     public System.Threading.Tasks.Task<string> uploadFileAsync(System.IO.Stream file)
     {
         return base.Channel.uploadFileAsync(file);
     }
-    
-    public byte[][] getFilesToUpload()
+
+    public byte[][] getFilesToUpload(string token)
     {
-        return base.Channel.getFilesToUpload();
+        return base.Channel.getFilesToUpload(token);
     }
-    
-    public System.Threading.Tasks.Task<byte[][]> getFilesToUploadAsync()
+
+    public System.Threading.Tasks.Task<byte[][]> getFilesToUploadAsync(string token)
     {
-        return base.Channel.getFilesToUploadAsync();
+        return base.Channel.getFilesToUploadAsync(token);
     }
 }

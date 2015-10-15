@@ -33,7 +33,7 @@ namespace FolderBackup.Client
         {
             BackupServiceClient server = new BackupServiceClient();
             DirectoryInfo rinfo;
-            server.auth("test1", "test1");
+            string token = server.auth("test1", "test1");
 
             string[] lines = { "First line", "Second line", "Third line" };
             string[] lines1 = { "First line", "Second line", "Third lines" };
@@ -51,25 +51,29 @@ namespace FolderBackup.Client
             serV.encodedVersion = v.serialize();
 
 
-            server.newTransaction(serV);
+            server.newTransaction(token, serV);
 
-            byte[][] bfiles = server.getFilesToUpload();
+            byte[][] bfiles = server.getFilesToUpload(token);
             foreach (byte[] bf in bfiles)
             {
                 FBFile f = FBFile.deserialize(bf);
             }
 
             FBFile file = (FBFile)new FBFileBuilder(@"asd\uno.txt").generate();
+            lines[0] = token + lines[0];
+            System.IO.File.WriteAllLines(@"asd\uno.txt", lines);
             FileStream fstream = new FileStream(@"asd\uno.txt", FileMode.Open, FileAccess.Read);
             server.uploadFile(fstream);
             fstream.Close();
 
             file = (FBFile)new FBFileBuilder(@"asd\due.txt").generate();
+            lines1[0] = token + "First line";
+            System.IO.File.WriteAllLines(@"asd\due.txt", lines1);
             fstream = new FileStream(@"asd\due.txt", FileMode.Open, FileAccess.Read);
             server.uploadFile(fstream);
             fstream.Close();
 
-            server.commit();
+            server.commit(token);
 
             System.IO.Directory.Delete("asd", true);
 
