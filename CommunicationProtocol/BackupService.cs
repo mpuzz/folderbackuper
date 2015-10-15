@@ -11,15 +11,15 @@ namespace FolderBackup.CommunicationProtocol
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, InstanceContextMode = InstanceContextMode.PerSession)] 
     public class BackupService : IBackupService
     {
-        public Boolean auth(string username, string password) { return true; }
-        public SerializedVersion getCurrentVersion() { return null; }
-        public Boolean newTransaction(SerializedVersion newVersion) { return true; }
-        public Boolean commit() { return true; }
+        public string auth(string username, string password) { return ""; }
+        public SerializedVersion getCurrentVersion(string token) { return null; }
+        public Boolean newTransaction(string token, SerializedVersion newVersion) { return true; }
+        public Boolean commit(string token) { return true; }
 
-        public Boolean rollback() { return false; }
+        public Boolean rollback(string token) { return false; }
 
         public string uploadFile(Stream file) { return ""; }
 
-        public byte[][] getFilesToUpload() { return null; }
+        public byte[][] getFilesToUpload(string token) { return null; }
     }
 }

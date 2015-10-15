@@ -9,307 +9,112 @@ using FolderBackup.CommunicationProtocol;
 using FolderBackup.Shared;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Globalization;
+using System.Security.Cryptography;
 
 namespace FolderBackup.Server
 {
-    [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, InstanceContextMode = InstanceContextMode.PerSession)]
+    [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Single, InstanceContextMode = InstanceContextMode.PerCall)]
     public class Server : IBackupService
     {
-        private int instanceNumber;
-        static private int nInstance = 0;
-        private List<FBFile> necessaryFiles;
-        private PhysicFilesList realFiles;
-        private PhysicFilesList uploadedFiles;
 
-        public User user;
-        public FBVersion inSyncVersion { get; set; }
-
-        private DirectoryInfo ptransactDir;
-
-        public DirectoryInfo transactDir
-        {
-
-            get
-            {
-                return this.transactionEnabled ? this.ptransactDir : null;
-            }
-            set
-            {
-                this.ptransactDir = this.transactionEnabled ? value : null;
-            }
-        }
-
-        private Boolean ptransactEnabled;
-        public Boolean transactionEnabled
-        {
-            get
-            {
-                return (user == null ? false : ptransactEnabled);
-            }
-            set
-            {
-                ptransactEnabled = (user == null ? false : value);
-            }
-        }
+        static private Dictionary<string, Session> sessions = new Dictionary<string, Session>();
 
         public Server()
         {
-            this.instanceNumber = Server.newInstance();
-            this.user = null;
+            
         }
 
-        static private int newInstance()
+        
+        
+        public string auth(string username, string password)
         {
-            Server.nInstance++;
-            return Server.nInstance;
-        }
-
-        private void checkAuthentication()
-        {
-            if (this.user == null)
-                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.PERMISSIONDENIED));
-        }
-
-        public bool auth(string username, string password)
-        {
+            Session s;
             try
             {
-                this.user = User.authUser(username, password);
-
-                if (!File.Exists(this.user.rootDirectory + @"\files.bin")) //primo accesso
-                {
-                    this.realFiles = new PhysicFilesList();
-                    Stream FilesStream = File.OpenWrite(this.user.rootDirectory + @"\files.bin");
-                    BinaryFormatter serializer = new BinaryFormatter();
-                    serializer.Serialize(FilesStream, realFiles);
-                    FilesStream.Close();
-
-                    user.rootDirectory.CreateSubdirectory("1970_01_01__00_00_00");
-                    FBVersionBuilder vb = new FBVersionBuilder(user.rootDirectory.FullName + @"\1970_01_01__00_00_00");
-                    FBVersion v = (FBVersion) vb.generate();
-                    FilesStream = File.OpenWrite(user.rootDirectory.FullName + @"\1970_01_01__00_00_00\version.bin");
-                    serializer.Serialize(FilesStream, v);
-                    FilesStream.Close();
-                }
-                else
-                {
-                    Stream FilesStream1 = File.OpenRead(this.user.rootDirectory + @"\files.bin");
-                    BinaryFormatter deserializer = new BinaryFormatter();
-                    this.realFiles = (PhysicFilesList)deserializer.Deserialize(FilesStream1);
-                    FilesStream1.Close();
-                }
+                s = Session.auth(username, password);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
                 throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.AUTHENTICATIONFAILED));
             }
-            
-            return true;
+
+            String token = Server.GetUniqueKey(20);
+            s.token = token;
+            Server.sessions.Add(token, s);
+
+            return token;
         }
 
-        public SerializedVersion getCurrentVersion()
+        public static string GetUniqueKey(int maxSize)
         {
-            this.checkAuthentication();
-
-            this.checkTransactionIsNotEnabled();
-            
-            try
+            char[] chars = new char[62];
+            chars =
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
+            byte[] data = new byte[1];
+            using (RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider())
             {
-                FBVersion version = currentVersion();
-                SerializedVersion serVersion = new SerializedVersion();
-                serVersion.encodedVersion = version.serialize();
-
-                return serVersion;
+                crypto.GetNonZeroBytes(data);
+                data = new byte[maxSize];
+                crypto.GetNonZeroBytes(data);
             }
-            catch (Exception e)
+            StringBuilder result = new StringBuilder(maxSize);
+            foreach (byte b in data)
             {
-                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.ROOTDIRECTORYNOTFOUND));
+                result.Append(chars[b % (chars.Length)]);
             }
+            return result.ToString();
         }
 
-        private FBVersion currentVersion()
+        public static Session getSessionByToken(string token)
         {
-
-            DirectoryInfo[] versionDirs = user.rootDirectory.GetDirectories();
-            if (versionDirs == null) throw new Exception();
-
-            if (versionDirs.Length == 0)
+            Session session = Server.sessions[token];
+            if (session == null)
             {
-                Directory.CreateDirectory(user.rootDirectory.FullName + @"\1970_01_01__00_00_00");
-                versionDirs = user.rootDirectory.GetDirectories();
+                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.PERMISSIONDENIED));
             }
-
-            DirectoryInfo last = versionDirs[0];
-            
-            foreach (DirectoryInfo di in versionDirs)
-            {
-                if (last.Equals(di)) continue;
-
-                DateTime dtl = DateTime.ParseExact(last.Name, "yyyy_MM_dd__HH_mm_ss", CultureInfo.InvariantCulture);
-                DateTime dt2 = DateTime.ParseExact(di.Name, "yyyy_MM_dd__HH_mm_ss", CultureInfo.InvariantCulture);
-                if (dt2 > dtl) last = di;
-            }
-
-            Stream TestFileStream = File.OpenRead(last.FullName + @"\version.bin");
-            BinaryFormatter deserializer = new BinaryFormatter();
-            FBVersion version = (FBVersion)deserializer.Deserialize(TestFileStream);
-            TestFileStream.Close();
-
-            return version;
+            return session;
         }
 
-        public bool newTransaction(SerializedVersion newVersion)
+        public SerializedVersion getCurrentVersion(string token)
         {
-            this.checkAuthentication();
-            
-            if (this.transactionEnabled)
-                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.TRANSACTIONALREADYENABLED));
+            Session session = Server.getSessionByToken(token);
 
-
-            FBVersion vers = FBVersion.deserialize(newVersion.encodedVersion);
-            if (vers.Equals(this.getCurrentVersion()))
-            {
-                return false;
-            }
-
-            this.transactionEnabled = true;
-            this.inSyncVersion = vers;
-
-            String newDirPath = this.user.rootDirectory.FullName;
-            newDirPath += "\\" + this.inSyncVersion.timestamp.ToString("yyyy_MM_dd__HH_mm_ss", CultureInfo.InvariantCulture);
-            this.transactDir = Directory.CreateDirectory(newDirPath);
-            if (this.transactDir == null)
-                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.CREATEVERSIONDIRECTORYFAILED));
-
-            necessaryFiles = FBVersion.getNecessaryFilesToUpgrade(this.inSyncVersion, this.realFiles.filesAlreadyRepresented());
-
-            return true;
+            return session.getCurrentVersion();
         }
 
-        private void checkTransactionIsNotEnabled()
+        public bool newTransaction(string token, SerializedVersion newVersion)
         {
-            if (this.transactionEnabled)
-                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.TRANSACTIONENABLED));
-        }
-        private void checkTransactionIsEnabled()
-        {
-            if (!this.transactionEnabled)
-                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.TRANSACTIONNOTENABLED));
+            return Server.getSessionByToken(token).newTransaction(newVersion);
         }
 
-        public bool commit()
+        public bool commit(string  token)
         {
-            this.checkAuthentication();
-            this.checkTransactionIsEnabled();
-
-            FBVersionBuilder fvb = new FBVersionBuilder(this.ptransactDir.FullName);
-            FBVersion actualVersion = (FBVersion)fvb.generate();
-            actualVersion.timestamp = inSyncVersion.timestamp;
-
-            if (this.necessaryFiles.Count == 0)
-            {
-                Stream FileStream = File.Create(this.transactDir.FullName + @"\version.bin");
-                BinaryFormatter serializer = new BinaryFormatter();
-                serializer.Serialize(FileStream, this.inSyncVersion);
-                FileStream.Close();
-
-                realFiles.add(this.uploadedFiles);
-
-                FileStream = File.OpenWrite(this.user.rootDirectory + @"\files.bin");
-                serializer.Serialize(FileStream, realFiles);
-                FileStream.Close();
-
-                this.uploadedFiles = null;
-                this.transactDir = null;
-                this.inSyncVersion = null;
-                this.transactionEnabled = false;
-                return true;
-            }
-            else
-                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.SYNCNOTTERMINATED));
-            
+            return Server.getSessionByToken(token).commit();
         }
 
-        public bool rollback()
+        public bool rollback(string token)
         {
-            this.checkAuthentication();
-            this.checkTransactionIsEnabled();
-
-            if (this.transactDir != null)
-            {
-                this.transactDir.Delete(true);
-                this.transactDir = null;
-            }
-
-            this.inSyncVersion = null;
-            this.transactionEnabled = false;
-            foreach (PhysicFile pf in this.uploadedFiles.list)
-            {
-                File.Delete(pf.getRealFileInfo().FullName);
-            }
-            this.uploadedFiles = null;
-
-            return true;
+            return Server.getSessionByToken(token).rollback();
         }
 
         public string uploadFile(Stream fileStream)
         {
-            string path = this.user.rootDirectory.FullName + "\\" + DateTime.UtcNow.ToString("yyyy_MM_dd_HH_mm_ss_fff", CultureInfo.InvariantCulture);
-            FBFile newFile;
-            FBFileBuilder fb;
+            string token = "";
+            char[] chars = new char[20];
 
-            SaveStreamToFile(fileStream, path);
-            fb = new FBFileBuilder(path);
-            newFile = (FBFile) fb.generate();
-
-            if (!this.necessaryFiles.Contains(newFile))
+            StreamReader sr = new StreamReader(fileStream, Encoding.Default);
+            sr.Read(chars, 0, 20);
+            foreach (char c in chars)
             {
-                File.Delete(path);
-                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.FILENOTNECESSARY));
+                token += c;
             }
-
-            this.uploadedFiles.add(new PhysicFile(newFile, path));
-
-            this.necessaryFiles.Remove(newFile);
-            return newFile.hash;
+            return Server.getSessionByToken(token).uploadFile(fileStream);
         }
 
-        private static void SaveStreamToFile(System.IO.Stream stream, string filePath)
+        public byte[][] getFilesToUpload(string token)
         {
-            FileStream outstream = File.Open(filePath, FileMode.Create, FileAccess.Write);
-            CopyStream(stream, outstream);
-            outstream.Close();
-            stream.Close();
-        }
-
-        private static void CopyStream(System.IO.Stream instream, System.IO.Stream outstream)
-        {
-            const int bufferLen = 4096;
-            byte[] buffer = new byte[bufferLen];
-            int count = 0;
-            int bytecount = 0;
-            while ((count = instream.Read(buffer, 0, bufferLen)) > 0)
-            {
-                outstream.Write(buffer, 0, count);
-                bytecount += count;
-            }
-        }
-
-        public byte[][] getFilesToUpload()
-        {
-            this.checkAuthentication();
-            this.checkTransactionIsEnabled();
-
-            necessaryFiles = FBVersion.getNecessaryFilesToUpgrade(this.inSyncVersion, this.realFiles.filesAlreadyRepresented());
-            this.uploadedFiles = new PhysicFilesList();
-
-            byte[][] ret = new byte[necessaryFiles.Count][];
-            for (int i = 0; i < necessaryFiles.Count; ++i)
-            {
-                ret[i] = necessaryFiles.ElementAt(i).serialize();
-            }
-            return ret;
+            return Server.getSessionByToken(token).getFilesToUpload();
         }
     }
 }

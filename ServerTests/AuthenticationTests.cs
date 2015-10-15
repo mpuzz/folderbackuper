@@ -9,12 +9,14 @@ namespace ServerTests
     [TestClass]
     public class AuthenticationTests
     {
+        string token;
         [TestMethod]
         public void CorrectAuthenticationTest()
         {
             FolderBackup.Server.Server serv = new FolderBackup.Server.Server();
-            Assert.IsNotNull(serv.auth("test1", "test1"));
-            Assert.AreEqual(serv.user.rootDirectory.FullName, @"c:\folderBackup\test1");
+            token = serv.auth("test1", "test1");
+            Assert.IsNotNull(token);
+            Assert.AreEqual(FolderBackup.Server.Server.getSessionByToken(token).user.rootDirectory.FullName, @"c:\folderBackup\test1");
         }
         [TestMethod]
         [ExpectedException(typeof(FaultException<ServiceErrorMessage>))]

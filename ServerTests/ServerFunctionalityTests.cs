@@ -12,12 +12,13 @@ namespace FolderBackup.ServerTests
     {
         Server.Server server;
         DirectoryInfo rinfo;
+        string token;
 
         [TestInitialize]
         public void TestInitialize()
         {
             server = new Server.Server();
-            server.auth("test1", "test1");
+            token = server.auth("test1", "test1");
 
             string[] lines = { "First line", "Second line", "Third line" };
             string[] lines1 = { "First line", "Second line", "Third lines" };
@@ -39,9 +40,9 @@ namespace FolderBackup.ServerTests
             serV.encodedVersion = v.serialize();
 
 
-            Assert.IsTrue(server.newTransaction(serV));
+            Assert.IsTrue(server.newTransaction(token, serV));
 
-            byte[][] bfiles = server.getFilesToUpload();
+            byte[][] bfiles = server.getFilesToUpload(token);
             foreach (byte[] bf in bfiles)
             {
                 FBFile f = FBFile.deserialize(bf);
@@ -49,16 +50,20 @@ namespace FolderBackup.ServerTests
             }
 
             FBFile file = (FBFile)new FBFileBuilder(@"asd\uno.txt").generate();
+            string[] lines = {token + "First line", "Second line", "Third line" };
+            System.IO.File.WriteAllLines(@"asd\uno.txt", lines);
             FileStream fstream = new FileStream(@"asd\uno.txt", FileMode.Open, FileAccess.Read);
             Assert.AreEqual(server.uploadFile(fstream), file.hash);
             fstream.Close();
 
             file = (FBFile)new FBFileBuilder(@"asd\due.txt").generate();
+            string[] lines1 = { token + "First line", "Second line", "Third lines" };
+            System.IO.File.WriteAllLines(@"asd\due.txt", lines1);
             fstream = new FileStream(@"asd\due.txt", FileMode.Open, FileAccess.Read);
             Assert.AreEqual(server.uploadFile(fstream), file.hash);
             fstream.Close();
 
-            Assert.IsTrue(server.commit());
+            Assert.IsTrue(server.commit(token));
         }
 
         [TestMethod]
@@ -77,7 +82,7 @@ namespace FolderBackup.ServerTests
             serV.encodedVersion = v.serialize();
 
 
-            Assert.IsTrue(server.newTransaction(serV));
+            Assert.IsTrue(server.newTransaction(token, serV));
         }
 
         [TestMethod]
@@ -90,9 +95,9 @@ namespace FolderBackup.ServerTests
             serV.encodedVersion = v.serialize();
 
 
-            Assert.IsTrue(server.newTransaction(serV));
+            Assert.IsTrue(server.newTransaction(token, serV));
 
-            byte[][] bfiles = server.getFilesToUpload();
+            byte[][] bfiles = server.getFilesToUpload(token);
             foreach (byte[] bf in bfiles)
             {
                 FBFile f = FBFile.deserialize(bf);
@@ -100,20 +105,24 @@ namespace FolderBackup.ServerTests
             }
 
             FBFile file = (FBFile)new FBFileBuilder(@"asd\uno.txt").generate();
+            string[] lines = { token + "First line", "Second line", "Third line" };
+            System.IO.File.WriteAllLines(@"asd\uno.txt", lines);
             FileStream fstream = new FileStream(@"asd\uno.txt", FileMode.Open, FileAccess.Read);
             Assert.AreEqual(server.uploadFile(fstream), file.hash);
             fstream.Close();
 
             file = (FBFile)new FBFileBuilder(@"asd\due.txt").generate();
+            string[] lines1 = { token + "First line", "Second line", "Third lines" };
+            System.IO.File.WriteAllLines(@"asd\due.txt", lines1);
             fstream = new FileStream(@"asd\due.txt", FileMode.Open, FileAccess.Read);
             Assert.AreEqual(server.uploadFile(fstream), file.hash);
             fstream.Close();
 
-            Assert.IsTrue(server.rollback());
+            Assert.IsTrue(server.rollback(token));
 
-            Assert.IsTrue(server.newTransaction(serV));
+            Assert.IsTrue(server.newTransaction(token, serV));
 
-            bfiles = server.getFilesToUpload();
+            bfiles = server.getFilesToUpload(token);
             foreach (byte[] bf in bfiles)
             {
                 FBFile f = FBFile.deserialize(bf);
@@ -125,11 +134,11 @@ namespace FolderBackup.ServerTests
         public void CleanUp()
         {
             System.IO.Directory.Delete("asd", true);
-            foreach(FileInfo f in server.user.rootDirectory.GetFiles())
+            foreach (FileInfo f in FolderBackup.Server.Server.getSessionByToken(token).user.rootDirectory.GetFiles())
             {
                 f.Delete();
             }
-            foreach (DirectoryInfo d in server.user.rootDirectory.GetDirectories())
+            foreach (DirectoryInfo d in FolderBackup.Server.Server.getSessionByToken(token).user.rootDirectory.GetDirectories())
             {
                 d.Delete(true);
             }

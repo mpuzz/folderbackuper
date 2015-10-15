@@ -14,25 +14,25 @@ namespace FolderBackup.CommunicationProtocol
     {
         [OperationContract]
         [FaultContract(typeof(ServiceErrorMessage))]
-        Boolean auth(string username, string password);
+        string auth(string username, string password);
 
         [OperationContract]
-        SerializedVersion getCurrentVersion();
+        SerializedVersion getCurrentVersion(string token);
 
         [OperationContract]
-        Boolean newTransaction(SerializedVersion newVersion);
+        Boolean newTransaction(string token, SerializedVersion newVersion);
 
         [OperationContract]
-        Boolean commit();
+        Boolean commit(string token);
 
         [OperationContract]
-        Boolean rollback();
+        Boolean rollback(string token);
 
         [OperationContract]
         string uploadFile(Stream file);
 
         [OperationContract]
-        byte[][] getFilesToUpload();
+        byte[][] getFilesToUpload(string token);
 
     }
 
