@@ -41,20 +41,42 @@ namespace FolderBackup.Server
             }
         }
 
-        public User getUser(string username, string password)
+        public User getUser(string username, string password, string token)
         {
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = this.connection;
 
-          /*  SHA1 sha1 = new SHA1CryptoServiceProvider();
-            byte[] bytes = new byte[password.Length * sizeof(char)];
-            System.Buffer.BlockCopy(password.ToCharArray(), 0, bytes, 0, bytes.Length);
-            sha1.ComputeHash(bytes);
-            password = System.Text.Encoding.Default.GetString(sha1.Hash);
-           */cmd.CommandText = "SELECT * FROM users WHERE username like @username AND password like sha1(@password)";
+            cmd.CommandText = "SELECT sha1(concat(password, @token)) as hashed, rootDirectory FROM users WHERE username like @username";
             cmd.Prepare();
             cmd.Parameters.AddWithValue("@username", username);
-            cmd.Parameters.AddWithValue("@password", password);
+            cmd.Parameters.AddWithValue("@token", token);
+
+            MySqlDataReader reader = cmd.ExecuteReader();
+            if (!reader.Read())
+            {
+                reader.Close();
+                return null;
+            }
+
+            User ret = null;
+            if(password.Equals((string) reader["hashed"])) {
+                ret = new User();
+                ret.rootDirectory = new DirectoryInfo((string)reader["rootDirectory"]);
+                ret.username = username;
+            }
+
+            reader.Close();
+            return ret;
+        }
+
+        public string getSalt(string username)
+        {
+            MySqlCommand cmd = new MySqlCommand();
+            cmd.Connection = this.connection;
+
+            cmd.CommandText = "SELECT salt FROM users WHERE username like @username";
+            cmd.Prepare();
+            cmd.Parameters.AddWithValue("@username", username);
 
             MySqlDataReader reader = cmd.ExecuteReader();
 
@@ -63,13 +85,42 @@ namespace FolderBackup.Server
                 reader.Close();
                 return null;
             }
-            
-            User ret = new User();
-            ret.rootDirectory = new DirectoryInfo((string)reader["rootDirectory"]);
-            ret.username = username;
+            string ret = (string)reader["salt"];
             reader.Close();
-
             return ret;
+        }
+
+        public bool register(string username, string password, string salt)
+        {
+            MySqlTransaction mtr =  this.connection.BeginTransaction();
+            MySqlCommand cmd = new MySqlCommand("SELECT * FROM users FOR UPDATE", connection, mtr);
+            cmd.Prepare();
+            cmd.ExecuteReader().Close();
+
+            cmd = new MySqlCommand("SELECT username FROM users WHERE username like @usern", connection, mtr);
+            cmd.Prepare();
+            cmd.Parameters.AddWithValue("@usern", username);
+            MySqlDataReader reader = cmd.ExecuteReader();
+
+            if (!reader.Read())
+            {
+                reader.Close();
+                cmd = new MySqlCommand("INSERT INTO users(username, password, rootDirectory, salt) VALUES(@us, sha1(concat(@pass, @salt)), @dir, @salt)");
+                cmd.Prepare();
+                cmd.Parameters.AddWithValue("@us", username);
+                cmd.Parameters.AddWithValue("@pass", password);
+                cmd.Parameters.AddWithValue("@dir", @"c:\folderBackup\" + username);
+                cmd.Parameters.AddWithValue("@salt", salt);
+                if (cmd.ExecuteNonQuery() == 0)
+                {
+                    mtr.Rollback();
+                    return false;
+                }
+                mtr.Commit();
+                return true;
+            }
+            mtr.Rollback();
+            return false;
         }
     }
 }

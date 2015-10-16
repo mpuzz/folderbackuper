@@ -78,5 +78,17 @@ namespace FolderBackup.Client
             System.IO.Directory.Delete("asd", true);
 
         }
+
+        private void Label_MouseEnter(object sender, MouseEventArgs e)
+        {
+            Color c = (Color) ColorConverter.ConvertFromString("#FF024FFF");
+            this.registerLabel.Foreground = new SolidColorBrush(c);
+        }
+
+        private void registerLabel_MouseLeave(object sender, MouseEventArgs e)
+        {
+            Color c = (Color)ColorConverter.ConvertFromString("#FF000000");
+            this.registerLabel.Foreground = new SolidColorBrush(c);
+        }
     }
 }

@@ -24,24 +24,59 @@ namespace FolderBackup.Server
         {
             
         }
-        
-        public string auth(string username, string password)
+
+        public bool register(string username, string password)
         {
-            Session s;
-            try
+            if (User.register(username, password, GetUniqueKey(10)))
             {
-                s = Session.auth(username, password);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.AUTHENTICATIONFAILED));
+                if (Directory.Exists(@"c:\folderBackup\" + username))
+                {
+                    Directory.Delete(@"c:\folderBackup\" + username, true);
+                }
+                Directory.CreateDirectory(@"c:\folderBackup\" + username);
+                return true;
             }
 
+            return false;
+        }
+
+        public AuthenticationData authStep1(string username)
+        {
+            string salt = User.getSalt(username);
+
+            if(salt == null)
+                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.AUTHENTICATIONFAILED));
+
+            Session s = new Session();
             String token = Server.GetUniqueKey(20);
             s.token = token;
             Server.sessions.Add(token, s);
 
+            return new AuthenticationData(salt, token);
+        }
+
+        public string authStep2(string token, string username, string password)
+        {
+            User u;
+
+            Session s = getSessionByToken(token);
+            try
+            {
+                u = User.authUser(username, password, token);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message + " " + e.GetType());
+                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.AUTHENTICATIONFAILED));
+            }
+
+            s.user = u;
+            Server.sessions.Remove(token);
+            token = GetUniqueKey(20);
+            s.token = token;
+            Server.sessions.Add(token, s);
+            s.initializeUser();
+            
             return token;
         }
 

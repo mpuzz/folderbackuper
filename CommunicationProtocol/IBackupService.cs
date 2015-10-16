@@ -14,24 +14,38 @@ namespace FolderBackup.CommunicationProtocol
     {
         [OperationContract]
         [FaultContract(typeof(ServiceErrorMessage))]
-        string auth(string username, string password);
+        bool register(string username, string password);
 
         [OperationContract]
+        [FaultContract(typeof(ServiceErrorMessage))]
+        AuthenticationData authStep1(string username);
+
+        [OperationContract]
+        [FaultContract(typeof(ServiceErrorMessage))]
+        string authStep2(string token, string username, string password);
+
+        [OperationContract]
+        [FaultContract(typeof(ServiceErrorMessage))]
         SerializedVersion getCurrentVersion(string token);
 
         [OperationContract]
+        [FaultContract(typeof(ServiceErrorMessage))]
         Boolean newTransaction(string token, SerializedVersion newVersion);
 
         [OperationContract]
+        [FaultContract(typeof(ServiceErrorMessage))]
         Boolean commit(string token);
 
         [OperationContract]
+        [FaultContract(typeof(ServiceErrorMessage))]
         Boolean rollback(string token);
 
         [OperationContract]
+        [FaultContract(typeof(ServiceErrorMessage))]
         string uploadFile(Stream file);
 
         [OperationContract]
+        [FaultContract(typeof(ServiceErrorMessage))]
         byte[][] getFilesToUpload(string token);
 
     }
@@ -62,5 +76,20 @@ namespace FolderBackup.CommunicationProtocol
 
         [DataMember]
         int type;
+    }
+
+    [DataContract]
+    public class AuthenticationData
+    {
+        [DataMember]
+        public string salt;
+        [DataMember]
+        public string token;
+
+        public AuthenticationData(string s, string t)
+        {
+            this.token = t;
+            this.salt = s;
+        }
     }
 }

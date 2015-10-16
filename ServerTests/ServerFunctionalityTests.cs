@@ -18,8 +18,9 @@ namespace FolderBackup.ServerTests
         public void TestInitialize()
         {
             server = new Server.Server();
-            token = server.auth("test1", "test1");
-
+            AuthenticationData ad = server.authStep1("test1");
+            token = server.authStep2(ad.token, "test1", AuthenticationPrimitives.hashPassword("test1", ad));
+            
             string[] lines = { "First line", "Second line", "Third line" };
             string[] lines1 = { "First line", "Second line", "Third lines" };
             System.IO.Directory.CreateDirectory("asd");
@@ -73,8 +74,9 @@ namespace FolderBackup.ServerTests
             server = null;
 
             server = new Server.Server();
-            server.auth("test1", "test1");
-
+            AuthenticationData ad = server.authStep1("test1");
+            token = server.authStep2(ad.token, "test1", AuthenticationPrimitives.hashPassword("test1", ad));
+            
             FBVersionBuilder vb = new FBVersionBuilder(rinfo.FullName);
             FolderBackup.Shared.FBVersion v = (FolderBackup.Shared.FBVersion)vb.generate();
 

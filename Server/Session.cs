@@ -70,17 +70,6 @@ namespace FolderBackup.Server
                 throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.PERMISSIONDENIED));
         }
 
-        static public Session auth(string username, string password)
-        {
-            User user;
-            user = User.authUser(username, password);
-
-            Session s = new Session();
-            s.user = user;
-            s.initializeUser();
-            return s;
-        }
-
         public void initializeUser() {
             if (!File.Exists(this.user.rootDirectory + @"\files.bin")) //primo accesso
             {
@@ -122,6 +111,7 @@ namespace FolderBackup.Server
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.Message);
                 throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.ROOTDIRECTORYNOTFOUND));
             }
         }

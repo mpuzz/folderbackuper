@@ -3,6 +3,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using FolderBackup.Server;
 using FolderBackup.CommunicationProtocol;
 using System.ServiceModel;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace ServerTests
 {
@@ -14,16 +16,18 @@ namespace ServerTests
         public void CorrectAuthenticationTest()
         {
             FolderBackup.Server.Server serv = new FolderBackup.Server.Server();
-            token = serv.auth("test1", "test1");
-            Assert.IsNotNull(token);
-            Assert.AreEqual(FolderBackup.Server.Server.getSessionByToken(token).user.rootDirectory.FullName, @"c:\folderBackup\test1");
+            AuthenticationData ad = serv.authStep1("test1");
+            token = ad.token;
+            Assert.IsNotNull(ad);
+            token = serv.authStep2(ad.token, "test1", AuthenticationPrimitives.hashPassword("test1", ad));
+            Assert.AreEqual(FolderBackup.Server.Server.getSessionByToken(token).user.rootDirectory.FullName, @"c:\folderBackup\test1\");
         }
         [TestMethod]
         [ExpectedException(typeof(FaultException<ServiceErrorMessage>))]
         public void InvalidUserAuthenticationTest()
         {
             FolderBackup.Server.Server serv = new FolderBackup.Server.Server();
-            serv.auth("test", "asd");
+            AuthenticationData ad = serv.authStep1("test");
         }
 
 
@@ -32,9 +36,12 @@ namespace ServerTests
         public void BadPasswordAuthenticationTest()
         {
             FolderBackup.Server.Server serv = new FolderBackup.Server.Server();
-            serv.auth("test1", "asd");
+            AuthenticationData ad = serv.authStep1("test1");
+            token = ad.token;
+            Assert.IsNotNull(ad);
+            token = serv.authStep2(ad.token, "test1", AuthenticationPrimitives.hashPassword("asd", ad));
         }
-
+        
         
     }
 }
