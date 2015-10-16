@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
 
-namespace FolderBackup.CommunicationProtocol
+namespace FolderBackup.Shared
 {
     public static class AuthenticationPrimitives
     {
-        static public string hashPassword(string password, AuthenticationData ad)
+        static public string hashPassword(string password, string salt, string token)
         {
-            return Hash(Hash(Hash(password) + ad.salt) + ad.token);
+            return Hash(Hash(Hash(password) + salt) + token);
         }
 
         static private string Hash(string input)

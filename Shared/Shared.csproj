@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="AbstractBuilder.cs" />
     <Compile Include="AbstractElement.cs" />
+    <Compile Include="AuthenticationPrimitives.cs" />
     <Compile Include="Directory.cs" />
     <Compile Include="DirectoryBuilder.cs" />
     <Compile Include="File.cs" />

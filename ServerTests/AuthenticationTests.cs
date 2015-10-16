@@ -5,6 +5,7 @@ using FolderBackup.CommunicationProtocol;
 using System.ServiceModel;
 using System.Security.Cryptography;
 using System.Text;
+using FolderBackup.Shared;
 
 namespace ServerTests
 {
@@ -19,7 +20,7 @@ namespace ServerTests
             AuthenticationData ad = serv.authStep1("test1");
             token = ad.token;
             Assert.IsNotNull(ad);
-            token = serv.authStep2(ad.token, "test1", AuthenticationPrimitives.hashPassword("test1", ad));
+            token = serv.authStep2(ad.token, "test1", AuthenticationPrimitives.hashPassword("test1", ad.salt, ad.token));
             Assert.AreEqual(FolderBackup.Server.Server.getSessionByToken(token).user.rootDirectory.FullName, @"c:\folderBackup\test1\");
         }
         [TestMethod]
@@ -39,7 +40,7 @@ namespace ServerTests
             AuthenticationData ad = serv.authStep1("test1");
             token = ad.token;
             Assert.IsNotNull(ad);
-            token = serv.authStep2(ad.token, "test1", AuthenticationPrimitives.hashPassword("asd", ad));
+            token = serv.authStep2(ad.token, "test1", AuthenticationPrimitives.hashPassword("asd", ad.salt, ad.token));
         }
         
         

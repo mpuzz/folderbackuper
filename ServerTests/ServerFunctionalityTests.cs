@@ -19,7 +19,7 @@ namespace FolderBackup.ServerTests
         {
             server = new Server.Server();
             AuthenticationData ad = server.authStep1("test1");
-            token = server.authStep2(ad.token, "test1", AuthenticationPrimitives.hashPassword("test1", ad));
+            token = server.authStep2(ad.token, "test1", AuthenticationPrimitives.hashPassword("test1", ad.salt, ad.token));
             
             string[] lines = { "First line", "Second line", "Third line" };
             string[] lines1 = { "First line", "Second line", "Third lines" };
@@ -75,7 +75,7 @@ namespace FolderBackup.ServerTests
 
             server = new Server.Server();
             AuthenticationData ad = server.authStep1("test1");
-            token = server.authStep2(ad.token, "test1", AuthenticationPrimitives.hashPassword("test1", ad));
+            token = server.authStep2(ad.token, "test1", AuthenticationPrimitives.hashPassword("test1", ad.salt, ad.token));
             
             FBVersionBuilder vb = new FBVersionBuilder(rinfo.FullName);
             FolderBackup.Shared.FBVersion v = (FolderBackup.Shared.FBVersion)vb.generate();

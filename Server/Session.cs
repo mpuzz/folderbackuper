@@ -14,8 +14,6 @@ namespace FolderBackup.Server
 {
     public class Session
     {
-        private int instanceNumber;
-        static private int nInstance = 0;
         private List<FBFile> necessaryFiles;
         private PhysicFilesList realFiles;
         private PhysicFilesList uploadedFiles;
@@ -54,14 +52,6 @@ namespace FolderBackup.Server
 
         public Session()
         {
-            this.instanceNumber = Session.newInstance();
-            this.user = null;
-        }
-
-        static private int newInstance()
-        {
-            Session.nInstance++;
-            return Session.nInstance;
         }
 
         private void checkAuthentication()

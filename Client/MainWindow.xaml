@@ -10,13 +10,13 @@
             <SolidColorBrush Color="#FFE3F0FE"/>
         </Grid.Background>
         <Label Content="FolderBackup" HorizontalAlignment="Left" Margin="98,19,0,0" VerticalAlignment="Top" FontFamily="Segoe UI Black" FontSize="21" Width="155"/>
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="167,72,0,0" VerticalAlignment="Top" Width="86" TextWrapping="Wrap"/>
+        <TextBox x:Name="usernameTxtBox" HorizontalAlignment="Left" Height="23" Margin="167,72,0,0" VerticalAlignment="Top" Width="86" TextWrapping="Wrap"/>
         <Button Content="Connect" HorizontalAlignment="Left" Margin="98,144,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
         <Button Content="Clear" HorizontalAlignment="Left" Margin="178,144,0,0" VerticalAlignment="Top" Width="75"/>
-        <PasswordBox HorizontalAlignment="Left" Margin="167,101,0,0" VerticalAlignment="Top" Height="23" Width="86"/>
+        <PasswordBox x:Name="paswordTxtBox" HorizontalAlignment="Left" Margin="167,101,0,0" VerticalAlignment="Top" Height="23" Width="86"/>
         <Label Content="Username" HorizontalAlignment="Left" Margin="98,73,0,0" VerticalAlignment="Top" Height="28"/>
         <Label Content="Password" HorizontalAlignment="Left" Margin="98,101,0,0" VerticalAlignment="Top" Height="28"/>
-        <Label x:Name="registerLabel" Content="Not yet registered? Sign up!" Margin="120,168,0,0" VerticalAlignment="Top" Height="23" Width="121" FontSize="9" HorizontalAlignment="Left" MouseEnter="Label_MouseEnter" MouseLeave="registerLabel_MouseLeave"/>
+        <Label x:Name="registerLabel" Content="Not yet registered? Sign up!" Margin="120,168,0,0" VerticalAlignment="Top" Height="23" Width="121" FontSize="9" HorizontalAlignment="Left" MouseEnter="Label_MouseEnter" MouseLeave="registerLabel_MouseLeave" MouseLeftButtonDown="registerLabel_MouseLeftButtonDown"/>
 
     </Grid>
 </Window>

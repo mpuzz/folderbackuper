@@ -31,52 +31,24 @@ namespace FolderBackup.Client
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            BackupServiceClient server = new BackupServiceClient();
-            DirectoryInfo rinfo;
-            string token = server.auth("test1", "test1");
+            string username = this.usernameTxtBox.Text;
+            string password = this.paswordTxtBox.Password;
 
-            string[] lines = { "First line", "Second line", "Third line" };
-            string[] lines1 = { "First line", "Second line", "Third lines" };
-            System.IO.Directory.CreateDirectory("asd");
-            System.IO.Directory.CreateDirectory(@"asd\ciao");
-            rinfo = new DirectoryInfo("asd");
-            System.IO.File.WriteAllLines(@"asd\uno.txt", lines);
-            System.IO.File.WriteAllLines(@"asd\due.txt", lines1);
-            System.IO.File.WriteAllLines(@"asd\ciao\due.txt", lines);
-
-            FBVersionBuilder vb = new FBVersionBuilder(rinfo.FullName);
-            FolderBackup.Shared.FBVersion v = (FolderBackup.Shared.FBVersion)vb.generate();
-
-            SerializedVersion serV = new SerializedVersion();
-            serV.encodedVersion = v.serialize();
-
-
-            server.newTransaction(token, serV);
-
-            byte[][] bfiles = server.getFilesToUpload(token);
-            foreach (byte[] bf in bfiles)
+            if (username.Equals(""))
             {
-                FBFile f = FBFile.deserialize(bf);
+                MessageBox.Show(this, "Username cannot be empty!", "Missing username", MessageBoxButton.OK);
+                return;
             }
 
-            FBFile file = (FBFile)new FBFileBuilder(@"asd\uno.txt").generate();
-            lines[0] = token + lines[0];
-            System.IO.File.WriteAllLines(@"asd\uno.txt", lines);
-            FileStream fstream = new FileStream(@"asd\uno.txt", FileMode.Open, FileAccess.Read);
-            server.uploadFile(fstream);
-            fstream.Close();
-
-            file = (FBFile)new FBFileBuilder(@"asd\due.txt").generate();
-            lines1[0] = token + "First line";
-            System.IO.File.WriteAllLines(@"asd\due.txt", lines1);
-            fstream = new FileStream(@"asd\due.txt", FileMode.Open, FileAccess.Read);
-            server.uploadFile(fstream);
-            fstream.Close();
-
-            server.commit(token);
-
-            System.IO.Directory.Delete("asd", true);
-
+            if (password.Equals(""))
+            {
+                MessageBox.Show(this, "Password cannot be empty!", "Missing password", MessageBoxButton.OK);
+                return;
+            }
+            string token;
+            BackupServiceClient server = logIn(username, password, out token);
+            if (server == null) return;
+            MessageBox.Show(this, "Log in succeed!");
         }
 
         private void Label_MouseEnter(object sender, MouseEventArgs e)
@@ -89,6 +61,43 @@ namespace FolderBackup.Client
         {
             Color c = (Color)ColorConverter.ConvertFromString("#FF000000");
             this.registerLabel.Foreground = new SolidColorBrush(c);
+        }
+
+        private void registerLabel_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            RegisterWindow rw = new RegisterWindow();
+            rw.parent = this;
+            rw.Show();
+            rw.Activate();
+            this.Hide();
+        }
+
+        private BackupServiceClient logIn(string username, string password, out string token)
+        {
+            BackupServiceClient server = new BackupServiceClient();
+            AuthenticationData ad;
+            try
+            {
+                ad = server.authStep1(username);
+            }
+            catch
+            {
+                MessageBox.Show(this, "Username doesn't exist.", "Wrong username", MessageBoxButton.OK);
+                token = null;
+                return null;
+            }
+
+            try
+            {
+                token = server.authStep2(ad.token, username, AuthenticationPrimitives.hashPassword(password, ad.salt, ad.token));
+            }
+            catch
+            {
+                MessageBox.Show(this, "Wrong Password", "", MessageBoxButton.OK);
+                token = null;
+                return null;
+            }
+            return server;
         }
     }
 }
