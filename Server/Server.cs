@@ -25,15 +25,21 @@ namespace FolderBackup.Server
             
         }
 
-        public bool register(string username, string password)
+        public string registerStep1(string username)
         {
-            if (User.register(username, password, GetUniqueKey(10)))
+            if (User.getSalt(username) != null) return null;
+            return Server.GetUniqueKey(10);
+        }
+
+        public bool registerStep2(string username, string password, string salt)
+        {
+            if (User.register(username, password, salt))
             {
-                if (Directory.Exists(@"c:\folderBackup\" + username))
+                if (Directory.Exists(@"c:\folderBackup\" + username + "\\"))
                 {
-                    Directory.Delete(@"c:\folderBackup\" + username, true);
+                    Directory.Delete(@"c:\folderBackup\" + username + "\\", true);
                 }
-                Directory.CreateDirectory(@"c:\folderBackup\" + username);
+                Directory.CreateDirectory(@"c:\folderBackup\" + username + "\\");
                 return true;
             }
 

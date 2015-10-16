@@ -14,6 +14,11 @@ namespace FolderBackup.Shared
             return Hash(Hash(Hash(password) + salt) + token);
         }
 
+        static public string hashPassword(string password, string salt)
+        {
+            return Hash(Hash(password) + salt);
+        }
+
         static private string Hash(string input)
         {
             using (SHA1Managed sha1 = new SHA1Managed())

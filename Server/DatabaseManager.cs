@@ -105,7 +105,7 @@ namespace FolderBackup.Server
             if (!reader.Read())
             {
                 reader.Close();
-                cmd = new MySqlCommand("INSERT INTO users(username, password, rootDirectory, salt) VALUES(@us, sha1(concat(@pass, @salt)), @dir, @salt)", this.connection, mtr);
+                cmd = new MySqlCommand("INSERT INTO users(username, password, rootDirectory, salt) VALUES(@us, @pass, @dir, @salt)", this.connection, mtr);
                 cmd.Prepare();
                 cmd.Parameters.AddWithValue("@us", username);
                 cmd.Parameters.AddWithValue("@pass", password);

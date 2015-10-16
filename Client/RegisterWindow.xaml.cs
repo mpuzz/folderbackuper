@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using FolderBackup.Shared;
 
 namespace FolderBackup.Client
 {
@@ -44,14 +45,30 @@ namespace FolderBackup.Client
             }
 
             BackupServiceClient server = new BackupServiceClient();
-            if (server.register(username, password))
+            string salt = server.registerStep1(username);
+            if (salt == null)
+            {
+                MessageBox.Show(this, "Username already choosen! Try another!", "Registration problem", MessageBoxButton.OK);
+                return;
+                
+            }
+            if (server.registerStep2(username, AuthenticationPrimitives.hashPassword(password, salt), salt))
             {
                 MessageBox.Show(this, "Registration succeed. You can log in now.", "Registration succeed!", MessageBoxButton.OK);
+                this.Hide();
+                this.parent.Activate();
+                this.parent.Show();
             }
             else
             {
                 MessageBox.Show(this, "Registration procedure failed!", "Error", MessageBoxButton.OK);
             }
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            this.parent.Show();
+            this.parent.Activate();
         }
 
         

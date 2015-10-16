@@ -11,7 +11,8 @@ namespace FolderBackup.CommunicationProtocol
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Multiple, InstanceContextMode = InstanceContextMode.PerSession)] 
     public class BackupService : IBackupService
     {
-        public bool register(string username, string password) { return false; }
+        public string registerStep1(string username) { return ""; }
+        public bool registerStep2(string username, string password, string salt) { return true; }
         public AuthenticationData authStep1(string username) { return null; }
         public string authStep2(string token, string username, string password) { return ""; }
         public SerializedVersion getCurrentVersion(string token) { return null; }

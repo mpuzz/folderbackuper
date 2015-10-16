@@ -133,12 +133,19 @@
 public interface IBackupService
 {
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/register", ReplyAction = "http://tempuri.org/IBackupService/registerResponse")]
-    [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action = "http://tempuri.org/IBackupService/registerServiceErrorMessageFault", Name = "ServiceErrorMessage", Namespace = "http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
-    bool register(string username, string password);
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/registerStep1", ReplyAction = "http://tempuri.org/IBackupService/registerStep1Response")]
+    [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action = "http://tempuri.org/IBackupService/registerStep1ServiceErrorMessageFault", Name = "ServiceErrorMessage", Namespace = "http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
+    string registerStep1(string username);
 
-    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/register", ReplyAction = "http://tempuri.org/IBackupService/registerResponse")]
-    System.Threading.Tasks.Task<bool> registerAsync(string username, string password);
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/registerStep1", ReplyAction = "http://tempuri.org/IBackupService/registerStep1Response")]
+    System.Threading.Tasks.Task<string> registerStep1Async(string username);
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/registerStep2", ReplyAction = "http://tempuri.org/IBackupService/registerStep2Response")]
+    [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action = "http://tempuri.org/IBackupService/registerStep2ServiceErrorMessageFault", Name = "ServiceErrorMessage", Namespace = "http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
+    bool registerStep2(string username, string password, string salt);
+
+    [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/registerStep2", ReplyAction = "http://tempuri.org/IBackupService/registerStep2Response")]
+    System.Threading.Tasks.Task<bool> registerStep2Async(string username, string password, string salt);
 
     [System.ServiceModel.OperationContractAttribute(Action = "http://tempuri.org/IBackupService/authStep1", ReplyAction = "http://tempuri.org/IBackupService/authStep1Response")]
     [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action = "http://tempuri.org/IBackupService/authStep1ServiceErrorMessageFault", Name = "ServiceErrorMessage", Namespace = "http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
@@ -231,14 +238,24 @@ public partial class BackupServiceClient : System.ServiceModel.ClientBase<IBacku
     {
     }
 
-    public bool register(string username, string password)
+    public string registerStep1(string username)
     {
-        return base.Channel.register(username, password);
+        return base.Channel.registerStep1(username);
     }
 
-    public System.Threading.Tasks.Task<bool> registerAsync(string username, string password)
+    public System.Threading.Tasks.Task<string> registerStep1Async(string username)
     {
-        return base.Channel.registerAsync(username, password);
+        return base.Channel.registerStep1Async(username);
+    }
+
+    public bool registerStep2(string username, string password, string salt)
+    {
+        return base.Channel.registerStep2(username, password, salt);
+    }
+
+    public System.Threading.Tasks.Task<bool> registerStep2Async(string username, string password, string salt)
+    {
+        return base.Channel.registerStep2Async(username, password, salt);
     }
 
     public FolderBackup.CommunicationProtocol.AuthenticationData authStep1(string username)

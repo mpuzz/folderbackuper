@@ -14,7 +14,10 @@ namespace FolderBackup.CommunicationProtocol
     {
         [OperationContract]
         [FaultContract(typeof(ServiceErrorMessage))]
-        bool register(string username, string password);
+        string registerStep1(string username);
+        [OperationContract]
+        [FaultContract(typeof(ServiceErrorMessage))]
+        bool registerStep2(string username, string password, string salt);
 
         [OperationContract]
         [FaultContract(typeof(ServiceErrorMessage))]
