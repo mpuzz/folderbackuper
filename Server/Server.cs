@@ -11,13 +11,13 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.AccessControl;
+using System.IO.Compression;
 
 namespace FolderBackup.Server
 {
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Single, InstanceContextMode = InstanceContextMode.PerCall)]
     public class Server : IBackupService
     {
-
         static private Dictionary<string, Session> sessions = new Dictionary<string, Session>();
 
         public Server()
@@ -182,6 +182,25 @@ namespace FolderBackup.Server
         public byte[][] getFilesToUpload(string token)
         {
             return Server.getSessionByToken(token).getFilesToUpload();
+        }
+
+        public SerializedVersion[] getOldVersions(string token)
+        {
+            LinkedList<FBVersion> versions = Server.getSessionByToken(token).getOldVersions();
+            SerializedVersion[] svers = new SerializedVersion[versions.Count];
+            int i = 0;
+            foreach (FBVersion ver in versions)
+            {
+                svers[i] = new SerializedVersion();
+                svers[i++].encodedVersion = ver.serialize();
+            }
+
+            return svers;
+        }
+
+        public Stream resetToPreviousVersion(string token, int versionAgo)
+        {
+            
         }
     }
 }

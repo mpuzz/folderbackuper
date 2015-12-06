@@ -289,5 +289,33 @@ namespace FolderBackup.Server
             }
             return ret;
         }
+
+        public LinkedList<FBVersion> getOldVersions()
+        {
+            DirectoryInfo[] versionDirs = user.rootDirectory.GetDirectories();
+            LinkedList<FBVersion> versions = new LinkedList<FBVersion>();
+            
+            if (versionDirs == null) throw new Exception();
+
+            if (versionDirs.Length == 0)
+            {
+                Directory.CreateDirectory(user.rootDirectory.FullName + @"\1970_01_01__00_00_00");
+                versionDirs = user.rootDirectory.GetDirectories();
+            }
+
+
+            foreach (DirectoryInfo di in versionDirs)
+            {
+                Stream TestFileStream = File.OpenRead(di.FullName + @"\version.bin");
+                BinaryFormatter deserializer = new BinaryFormatter();
+                FBVersion version = (FBVersion)deserializer.Deserialize(TestFileStream);
+                versions.AddLast(version);
+                TestFileStream.Close();
+            }
+
+            
+
+            return versions;
+        }
     }
 }

@@ -51,6 +51,14 @@ namespace FolderBackup.CommunicationProtocol
         [FaultContract(typeof(ServiceErrorMessage))]
         byte[][] getFilesToUpload(string token);
 
+        [OperationContract]
+        [FaultContract(typeof(ServiceErrorMessage))]
+        Stream resetToPreviousVersion(string token, int versionAgo);
+
+        [OperationContract]
+        [FaultContract(typeof(ServiceErrorMessage))]
+        SerializedVersion[] getOldVersions(string token);
+
     }
 
     [DataContract]

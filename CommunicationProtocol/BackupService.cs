@@ -24,5 +24,7 @@ namespace FolderBackup.CommunicationProtocol
         public string uploadFile(Stream file) { return ""; }
 
         public byte[][] getFilesToUpload(string token) { return null; }
+
+        public Stream resetToPreviousVersion(string token, int versionAgo) { return null; }
     }
 }
