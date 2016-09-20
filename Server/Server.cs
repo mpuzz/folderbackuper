@@ -200,7 +200,7 @@ namespace FolderBackup.Server
 
         public Stream resetToPreviousVersion(string token, int versionAgo)
         {
-            
+            return Server.getSessionByToken(token).revertVersion(versionAgo);
         }
     }
 }

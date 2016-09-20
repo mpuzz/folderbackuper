@@ -48,6 +48,7 @@
     <Compile Include="DirectoryBuilder.cs" />
     <Compile Include="File.cs" />
     <Compile Include="FileBuilder.cs" />
+    <Compile Include="Instruction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Version.cs" />
     <Compile Include="VersionBuilder.cs" />
