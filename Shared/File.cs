@@ -63,5 +63,14 @@ namespace FolderBackup.Shared
             BinaryFormatter deserializer = new BinaryFormatter();
             return (FBFile)deserializer.Deserialize(ms);
         }
+
+        public override FBAbstractElement Clone()
+        {
+            FBFile cloned = new FBFile(this.Name);
+            cloned.hash = String.Copy(hash);
+            cloned.dimension = dimension;
+
+            return cloned;
+        }
     }
 }

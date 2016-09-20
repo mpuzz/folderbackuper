@@ -16,7 +16,7 @@ namespace FolderBackup.Shared
         public FBAbstractElement() { }
         public FBAbstractElement(string name)
         {
-            this.Name = name;
+            this.Name = String.Copy(name);
         }
         abstract public Boolean isEqualTo(FBAbstractElement other);
 
@@ -25,5 +25,7 @@ namespace FolderBackup.Shared
             if (obj.GetType() != this.GetType()) return false;
             return this.isEqualTo((FBAbstractElement) obj);
         }
+
+        abstract public FBAbstractElement Clone();
     }
 }

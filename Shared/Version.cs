@@ -86,5 +86,28 @@ namespace FolderBackup.Shared
             return necessaryFiles;
         }
 
+        static public FBVersion operator -(FBVersion first, FBVersion second)
+        {
+            FBVersion ret = new FBVersion();
+            ret.Name = "Diff";
+            ret.timestamp = new DateTime();
+            ret.root = first.root - second.root;
+            return ret;
+        }
+
+        public void setAbsoluteNameToFile()
+        {
+            this.root.Name = "";
+            this.root.setAbsoluteNameToFile();
+        }
+
+        public override FBAbstractElement Clone()
+        {
+            FBVersion cloned = new FBVersion(this.Name);
+            cloned.timestamp = new DateTime(timestamp.Ticks);
+            cloned.root = (FBDirectory) this.root.Clone();
+            return cloned;
+        }
+
     }
 }

@@ -36,6 +36,7 @@ namespace FolderBackup.Shared
 
         public void addContent(FBAbstractElement newElement)
         {
+            if (newElement == null) return;
             this.content.Add(newElement.Name, newElement);
         }
 
@@ -60,6 +61,64 @@ namespace FolderBackup.Shared
             }
 
             return true;
+        }
+
+        static public FBDirectory operator -(FBDirectory first, FBDirectory second)
+        {
+            FBDirectory ret = new FBDirectory(first.Name);
+            ret.Name = first.Name;
+
+            foreach (KeyValuePair<string, FBAbstractElement> entry in first.content)
+            {
+                if (!second.content.ContainsKey(entry.Key))
+                {
+                    ret.addContent(entry.Value.Clone());
+                }
+                else
+                {
+                    if (!entry.Value.isEqualTo(second.content[entry.Key]))
+                    {
+                        if (entry.GetType().Equals(first.GetType()) && second.content[entry.Key].Equals(first.GetType()))
+                        {
+                            ret.addContent((FBDirectory)entry.Value - (FBDirectory)second.content[entry.Key]);
+                        }
+                        ret.addContent(entry.Value.Clone());
+                    }
+                    if (entry.Value.GetType() != first.GetType())
+                    {
+                        if (entry.Value.Name != second.content[entry.Key].Name)
+                        {
+                            ret.addContent(entry.Value.Clone());
+                        }
+                    }
+                }
+            }
+
+            if (ret.content.Count == 0) return null;
+            return ret;
+        }
+
+        public void setAbsoluteNameToFile()
+        {
+            foreach (FBAbstractElement abs in this.content.Values)
+            {
+                abs.Name = this.Name + abs.Name;
+                if (abs.GetType() == this.GetType())
+                {
+                    abs.Name = abs.Name + @"\";
+                    ((FBDirectory)abs).setAbsoluteNameToFile();
+                }
+            }
+        }
+
+        public override FBAbstractElement Clone()
+        {
+            FBDirectory newDir = new FBDirectory(this.Name);
+            foreach (FBAbstractElement abs in this.content.Values)
+            {
+                newDir.addContent(abs.Clone());
+            }
+            return newDir;
         }
     }
 }
