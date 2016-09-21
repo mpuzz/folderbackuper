@@ -18,7 +18,6 @@ namespace FolderBackup.Server
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Single, InstanceContextMode = InstanceContextMode.PerCall)]
     public class Server : IBackupService
     {
-        static private Dictionary<string, Session> sessions = new Dictionary<string, Session>();
 
         public Server()
         {
@@ -56,7 +55,7 @@ namespace FolderBackup.Server
             Session s = new Session();
             String token = Server.GetUniqueKey(20);
             s.token = token;
-            Server.sessions.Add(token, s);
+            Session.sessions.Add(token, s);
 
             return new AuthenticationData(salt, token);
         }
@@ -77,10 +76,10 @@ namespace FolderBackup.Server
             }
 
             s.user = u;
-            Server.sessions.Remove(token);
+            Session.sessions.Remove(token);
             token = GetUniqueKey(20);
             s.token = token;
-            Server.sessions.Add(token, s);
+            Session.sessions.Add(token, s);
             s.initializeUser();
             
             return token;
@@ -108,7 +107,7 @@ namespace FolderBackup.Server
 
         public static Session getSessionByToken(string token)
         {
-            Session session = Server.sessions[token];
+            Session session = Session.sessions[token];
             if (session == null)
             {
                 throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.PERMISSIONDENIED));
@@ -155,7 +154,10 @@ namespace FolderBackup.Server
             {
                 token += c;
             }
-            return Server.getSessionByToken(token).uploadFile(fs);
+            Session session = Server.getSessionByToken(token);
+            if(session == null)
+                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.PERMISSIONDENIED));
+            return session.uploadFile(fs);
         }
 
         private static void SaveStreamToFile(System.IO.Stream stream, string filePath)

@@ -15,6 +15,7 @@ namespace FolderBackup.Server
 {
     public class Session
     {
+        static public Dictionary<string, Session> sessions = new Dictionary<string, Session>();
         private List<FBFile> necessaryFiles;
         private PhysicFilesList realFiles;
         private PhysicFilesList uploadedFiles;
