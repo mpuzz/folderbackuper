@@ -29,35 +29,35 @@ namespace FolderBackup.CommunicationProtocol
 
         [OperationContract]
         [FaultContract(typeof(ServiceErrorMessage))]
-        SerializedVersion getCurrentVersion(string token);
+        SerializedVersion getCurrentVersion();
 
         [OperationContract]
         [FaultContract(typeof(ServiceErrorMessage))]
-        Boolean newTransaction(string token, SerializedVersion newVersion);
+        Boolean newTransaction(SerializedVersion newVersion);
 
         [OperationContract]
         [FaultContract(typeof(ServiceErrorMessage))]
-        Boolean commit(string token);
+        Boolean commit();
 
         [OperationContract]
         [FaultContract(typeof(ServiceErrorMessage))]
-        Boolean rollback(string token);
+        Boolean rollback();
 
         [OperationContract]
         [FaultContract(typeof(ServiceErrorMessage))]
-        string uploadFile(Stream file);
+        UploadData uploadFile(SerializedFile file);
 
         [OperationContract]
         [FaultContract(typeof(ServiceErrorMessage))]
-        byte[][] getFilesToUpload(string token);
+        byte[][] getFilesToUpload();
 
         [OperationContract]
         [FaultContract(typeof(ServiceErrorMessage))]
-        Stream resetToPreviousVersion(string token, int versionAgo);
+        UInt16 resetToPreviousVersion(int versionAgo);
 
         [OperationContract]
         [FaultContract(typeof(ServiceErrorMessage))]
-        SerializedVersion[] getOldVersions(string token);
+        SerializedVersion[] getOldVersions();
 
     }
 
@@ -66,6 +66,13 @@ namespace FolderBackup.CommunicationProtocol
     {
         [DataMember]
         public byte[] encodedVersion;
+    }
+
+    [DataContract]
+    public class SerializedFile
+    {
+        [DataMember]
+        public byte[] encodedFile;
     }
 
     [DataContract]
@@ -101,6 +108,21 @@ namespace FolderBackup.CommunicationProtocol
         {
             this.token = t;
             this.salt = s;
+        }
+    }
+
+    [DataContract]
+    public class UploadData
+    {
+        [DataMember]
+        public UInt16 port;
+        [DataMember]
+        public string token;
+
+        public UploadData(UInt16 p, string t)
+        {
+            this.token = t;
+            this.port = p;
         }
     }
 }

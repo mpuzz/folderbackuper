@@ -15,18 +15,18 @@ namespace FolderBackup.CommunicationProtocol
         public bool registerStep2(string username, string password, string salt) { return true; }
         public AuthenticationData authStep1(string username) { return null; }
         public string authStep2(string token, string username, string password) { return ""; }
-        public SerializedVersion getCurrentVersion(string token) { return null; }
-        public Boolean newTransaction(string token, SerializedVersion newVersion) { return true; }
-        public Boolean commit(string token) { return true; }
+        public SerializedVersion getCurrentVersion() { return null; }
+        public Boolean newTransaction(SerializedVersion newVersion) { return true; }
+        public Boolean commit() { return true; }
 
-        public Boolean rollback(string token) { return false; }
+        public Boolean rollback() { return false; }
 
-        public string uploadFile(Stream file) { return ""; }
+        public UploadData uploadFile(SerializedFile file) { return null; }
 
-        public byte[][] getFilesToUpload(string token) { return null; }
+        public byte[][] getFilesToUpload() { return null; }
 
-        public Stream resetToPreviousVersion(string token, int versionAgo) { return null; }
+        public UInt16 resetToPreviousVersion(int versionAgo) { return 0; }
 
-        public SerializedVersion[] getOldVersions(string token) { return null; }
+        public SerializedVersion[] getOldVersions() { return null; }
     }
 }
