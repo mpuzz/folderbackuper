@@ -19,28 +19,34 @@ namespace FolderBackup.Server
 
         public void add(PhysicFile pf)
         {
-            list.Add(pf);
+            lock(this)
+                list.Add(pf);
         }
 
         public void add(PhysicFilesList pfl)
         {
-            list.AddRange(pfl.list);
+            lock(this)
+                list.AddRange(pfl.list);
         }
 
         public void delete(PhysicFile pf)
         {
-            list.Remove(pf);
+            lock(this)
+                list.Remove(pf);
         }
 
         public List<FBFile> filesAlreadyRepresented()
         {
-            List<FBFile> l = new List<FBFile>();
-
-            foreach (PhysicFile pf in this.list)
+            lock (this)
             {
-                l.Add(pf.getFBFile());
+                List<FBFile> l = new List<FBFile>();
+
+                foreach (PhysicFile pf in this.list)
+                {
+                    l.Add(pf.getFBFile());
+                }
+                return l;
             }
-            return l;
         }
     }
 

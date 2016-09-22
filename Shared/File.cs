@@ -73,4 +73,44 @@ namespace FolderBackup.Shared
             return cloned;
         }
     }
+
+    public class ThreadSafeList<T>
+    {
+        private List<T> list;
+
+        public int Count
+        {
+            get
+            {
+                lock(this)
+                {
+                    return list.Count;
+                }
+            }
+        }
+        public bool Contains(T obj)
+        {
+            lock (this)
+                return this.list.Contains(obj);
+        }
+
+        public bool Remove(T obj)
+        {
+            lock (this)
+                return this.list.Remove(obj);
+        }
+        
+        public T ElementAt(int n)
+        {
+            lock (this)
+                return this.list.ElementAt(n);
+        }
+        public ThreadSafeList(List<T> list)
+        {
+            this.list = list;
+
+        }
+
+        
+    }
 }
