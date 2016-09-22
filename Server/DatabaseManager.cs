@@ -41,6 +41,16 @@ namespace FolderBackup.Server
             }
         }
 
+        /// <summary>
+        /// Strong authentication process.
+        /// The cient must provide: sha1(sha1(real_password + salt) + token).
+        /// In this way, the information stored in the database (sha1(real_password + salt))
+        /// is never sent on the wire.
+        /// </summary>
+        /// <param name="username">username</param>
+        /// <param name="password">sha1(sha1(real_password + salt) + token)</param>
+        /// <param name="token">token</param>
+        /// <returns>The User object is the authentication succededs, null if it does not.</returns>
         public User getUser(string username, string password, string token)
         {
             MySqlCommand cmd = new MySqlCommand();
