@@ -15,13 +15,17 @@ using System.IO.Compression;
 
 namespace FolderBackup.Server
 {
-    [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Single, InstanceContextMode = InstanceContextMode.PerCall)]
+    public delegate void NotifyErrorReceiving(string token);
+    public delegate void NotifyReceiveComplete(FBFile file);
+
+    [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Single, InstanceContextMode = InstanceContextMode.PerSession)]
     public class Server : IBackupService
     {
+        public Session session;
 
         public Server()
         {
-            
+            this.session = new Session();
         }
 
         public string registerStep1(string username)
@@ -54,8 +58,6 @@ namespace FolderBackup.Server
 
             Session s = new Session();
             String token = Server.GetUniqueKey(20);
-            s.token = token;
-            Session.sessions.Add(token, s);
 
             return new AuthenticationData(salt, token);
         }
@@ -64,7 +66,6 @@ namespace FolderBackup.Server
         {
             User u;
 
-            Session s = getSessionByToken(token);
             try
             {
                 u = User.authUser(username, password, token);
@@ -75,12 +76,9 @@ namespace FolderBackup.Server
                 throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.AUTHENTICATIONFAILED));
             }
 
-            s.user = u;
-            Session.sessions.Remove(token);
+            session.user = u;
             token = GetUniqueKey(20);
-            s.token = token;
-            Session.sessions.Add(token, s);
-            s.initializeUser();
+            session.initializeUser();
             
             return token;
         }
@@ -105,90 +103,53 @@ namespace FolderBackup.Server
             return result.ToString();
         }
 
-        public static Session getSessionByToken(string token)
+        public SerializedVersion getCurrentVersion()
         {
-            Session session = Session.sessions[token];
-            if (session == null)
-            {
-                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.PERMISSIONDENIED));
-            }
-            return session;
-        }
-
-        public SerializedVersion getCurrentVersion(string token)
-        {
-            Session session = Server.getSessionByToken(token);
-
             return session.getCurrentVersion();
         }
 
-        public bool newTransaction(string token, SerializedVersion newVersion)
+        public bool newTransaction(SerializedVersion newVersion)
         {
-            return Server.getSessionByToken(token).newTransaction(newVersion);
+            return session.newTransaction(newVersion);
         }
 
-        public bool commit(string  token)
+        public bool commit()
         {
-            return Server.getSessionByToken(token).commit();
+            return session.commit();
         }
 
-        public bool rollback(string token)
+        public bool rollback()
         {
-            return Server.getSessionByToken(token).rollback();
+            return session.rollback();
         }
 
-        public string uploadFile(Stream fileStream)
+        public void ManageCompleteUpload(FBFile f)
         {
-            string token = "";
-            char[] chars = new char[20];
 
-            if(!Directory.Exists("tmp")) Directory.CreateDirectory("tmp");
-            SaveStreamToFile(fileStream, "tmp\\prova");
-            fileStream.Close();
-
-            FileStream fs = new FileStream("tmp\\prova", FileMode.Open, FileAccess.Read);
-
-            StreamReader sr = new StreamReader(fs, Encoding.Default);
-            sr.Read(chars, 0, 20);
-            foreach (char c in chars)
-            {
-                token += c;
-            }
-            Session session = Server.getSessionByToken(token);
-            if(session == null)
-                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.PERMISSIONDENIED));
-            return session.uploadFile(fs);
         }
 
-        private static void SaveStreamToFile(System.IO.Stream stream, string filePath)
+        public void ManageFailedUpload(string token)
         {
-            FileStream outstream = File.Open(filePath, FileMode.Create, FileAccess.Write);
-            CopyStream(stream, outstream);
-            outstream.Close();
-            stream.Close();
+
         }
 
-        private static void CopyStream(System.IO.Stream instream, System.IO.Stream outstream)
+        public UploadData uploadFile(SerializedFile fileStream)
         {
-            const int bufferLen = 4096;
-            byte[] buffer = new byte[bufferLen];
-            int count = 0;
-            int bytecount = 0;
-            while ((count = instream.Read(buffer, 0, bufferLen)) > 0)
-            {
-                outstream.Write(buffer, 0, count);
-                bytecount += count;
-            }
+            string token = Server.GetUniqueKey(10);
+            SecureChannel channel = new SecureChannel(this, token, this.ManageCompleteUpload, this.ManageFailedUpload);
+            UInt16 port = channel.port;
+
+            return new UploadData(port, token);
         }
 
-        public byte[][] getFilesToUpload(string token)
+        public byte[][] getFilesToUpload()
         {
-            return Server.getSessionByToken(token).getFilesToUpload();
+            return session.getFilesToUpload();
         }
 
-        public SerializedVersion[] getOldVersions(string token)
+        public SerializedVersion[] getOldVersions()
         {
-            LinkedList<FBVersion> versions = Server.getSessionByToken(token).getOldVersions();
+            LinkedList<FBVersion> versions = session.getOldVersions();
             SerializedVersion[] svers = new SerializedVersion[versions.Count];
             int i = 0;
             foreach (FBVersion ver in versions)
@@ -200,9 +161,9 @@ namespace FolderBackup.Server
             return svers;
         }
 
-        public Stream resetToPreviousVersion(string token, int versionAgo)
+        public UInt16 resetToPreviousVersion(int versionAgo)
         {
-            return Server.getSessionByToken(token).revertVersion(versionAgo);
+            return session.revertVersion(versionAgo);
         }
     }
 }

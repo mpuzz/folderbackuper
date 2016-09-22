@@ -15,11 +15,9 @@ namespace FolderBackup.Server
 {
     public class Session
     {
-        static public Dictionary<string, Session> sessions = new Dictionary<string, Session>();
-        private List<FBFile> necessaryFiles;
+        public ThreadSafeList<FBFile> necessaryFiles;
         private PhysicFilesList realFiles;
-        private PhysicFilesList uploadedFiles;
-        public string token;
+        public PhysicFilesList uploadedFiles;
 
         public User user;
         public FBVersion inSyncVersion { get; set; }
@@ -162,7 +160,7 @@ namespace FolderBackup.Server
             if (this.transactDir == null)
                 throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.CREATEVERSIONDIRECTORYFAILED));
 
-            necessaryFiles = FBVersion.getNecessaryFilesToUpgrade(this.inSyncVersion, this.realFiles.filesAlreadyRepresented());
+            necessaryFiles = new ThreadSafeList<FBFile>(FBVersion.getNecessaryFilesToUpgrade(this.inSyncVersion, this.realFiles.filesAlreadyRepresented()));
 
             return true;
         }
@@ -232,56 +230,13 @@ namespace FolderBackup.Server
 
             return true;
         }
-
-        public string uploadFile(Stream fileStream)
-        {
-            string path = this.user.rootDirectory.FullName + "\\" + DateTime.UtcNow.ToString("yyyy_MM_dd_HH_mm_ss_fff", CultureInfo.InvariantCulture);
-            FBFile newFile;
-            FBFileBuilder fb;
-            fileStream.Seek(20, SeekOrigin.Begin);
-            SaveStreamToFile(fileStream, path);
-            fb = new FBFileBuilder(path);
-            newFile = (FBFile) fb.generate();
-
-            if (!this.necessaryFiles.Contains(newFile))
-            {
-                File.Delete(path);
-                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.FILENOTNECESSARY));
-            }
-
-            this.uploadedFiles.add(new PhysicFile(newFile, path));
-
-            this.necessaryFiles.Remove(newFile);
-            return newFile.hash;
-        }
-
-        private static void SaveStreamToFile(System.IO.Stream stream, string filePath)
-        {
-            FileStream outstream = File.Open(filePath, FileMode.Create, FileAccess.Write);
-            CopyStream(stream, outstream);
-            outstream.Close();
-            stream.Close();
-        }
-
-        private static void CopyStream(System.IO.Stream instream, System.IO.Stream outstream)
-        {
-            const int bufferLen = 4096;
-            byte[] buffer = new byte[bufferLen];
-            int count = 0;
-            int bytecount = 0;
-            while ((count = instream.Read(buffer, 0, bufferLen)) > 0)
-            {
-                outstream.Write(buffer, 0, count);
-                bytecount += count;
-            }
-        }
-
+        
         public byte[][] getFilesToUpload()
         {
             this.checkAuthentication();
             this.checkTransactionIsEnabled();
 
-            necessaryFiles = FBVersion.getNecessaryFilesToUpgrade(this.inSyncVersion, this.realFiles.filesAlreadyRepresented());
+            necessaryFiles = new ThreadSafeList<FBFile>(FBVersion.getNecessaryFilesToUpgrade(this.inSyncVersion, this.realFiles.filesAlreadyRepresented()));
             this.uploadedFiles = new PhysicFilesList();
 
             byte[][] ret = new byte[necessaryFiles.Count][];
@@ -315,12 +270,10 @@ namespace FolderBackup.Server
                 TestFileStream.Close();
             }
 
-            
-
             return versions;
         }
 
-        public Stream revertVersion(int versionAgo)
+        public UInt16 revertVersion(int versionAgo)
         {
             var directories = Directory.EnumerateDirectories(user.rootDirectory.FullName).OrderByDescending(filename => filename);
             
@@ -387,7 +340,8 @@ namespace FolderBackup.Server
 
             zip.CreateEntryFromFile(this.user.rootDirectory + @"\instructions.bin", "instructions.bin", CompressionLevel.Optimal);
             File.Delete(this.user.rootDirectory + @"\instructions.bin");
-            return new FileStream(user.rootDirectory.FullName + @"\tmp.zip", FileMode.Open, FileAccess.Read);
+            //return new FileStream(user.rootDirectory.FullName + @"\tmp.zip", FileMode.Open, FileAccess.Read);
+            return 0;
         }
     }
 }
