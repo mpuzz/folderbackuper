@@ -66,6 +66,10 @@ namespace FolderBackup.CommunicationProtocol
     {
         [DataMember]
         public byte[] encodedVersion;
+        public SerializedVersion(byte[] serV)
+        {
+            encodedVersion = serV;
+        }
     }
 
     [DataContract]
@@ -73,6 +77,10 @@ namespace FolderBackup.CommunicationProtocol
     {
         [DataMember]
         public byte[] encodedFile;
+        public SerializedFile(byte[] serF)
+        {
+            encodedFile = serF;
+        }
     }
 
     [DataContract]

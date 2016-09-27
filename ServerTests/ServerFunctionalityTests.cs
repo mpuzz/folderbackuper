@@ -4,6 +4,9 @@ using FolderBackup.Server;
 using FolderBackup.Shared;
 using FolderBackup.CommunicationProtocol;
 using System.IO;
+using System.Net.Sockets;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 
 namespace FolderBackup.ServerTests
 {
@@ -17,8 +20,14 @@ namespace FolderBackup.ServerTests
         [TestInitialize]
         public void TestInitialize()
         {
+            
             server = new Server.Server();
             AuthenticationData ad = server.authStep1("test1");
+            token = server.authStep2(ad.token, "test1", AuthenticationPrimitives.hashPassword("test1", ad.salt, ad.token));
+            CleanUp();
+
+            server = new Server.Server();
+            ad = server.authStep1("test1");
             token = server.authStep2(ad.token, "test1", AuthenticationPrimitives.hashPassword("test1", ad.salt, ad.token));
             
             string[] lines = { "First line", "Second line", "Third line" };
@@ -37,13 +46,11 @@ namespace FolderBackup.ServerTests
             FBVersionBuilder vb = new FBVersionBuilder(rinfo.FullName);
             FolderBackup.Shared.FBVersion v = (FolderBackup.Shared.FBVersion)vb.generate();
 
-            SerializedVersion serV = new SerializedVersion();
-            serV.encodedVersion = v.serialize();
+            SerializedVersion serV = new SerializedVersion(v.serialize());
 
+            Assert.IsTrue(server.newTransaction(serV));
 
-            Assert.IsTrue(server.newTransaction(token, serV));
-
-            byte[][] bfiles = server.getFilesToUpload(token);
+            byte[][] bfiles = server.getFilesToUpload();
             foreach (byte[] bf in bfiles)
             {
                 FBFile f = FBFile.deserialize(bf);
@@ -51,20 +58,56 @@ namespace FolderBackup.ServerTests
             }
 
             FBFile file = (FBFile)new FBFileBuilder(@"asd\uno.txt").generate();
-            string[] lines = {token + "First line", "Second line", "Third line" };
+            string[] lines = {"First line", "Second line", "Third line" };
             System.IO.File.WriteAllLines(@"asd\uno.txt", lines);
             FileStream fstream = new FileStream(@"asd\uno.txt", FileMode.Open, FileAccess.Read);
-            Assert.AreEqual(server.uploadFile(fstream), file.hash);
-            fstream.Close();
 
+            UploadData credential = server.uploadFile(new SerializedFile(file.serialize()));
+            this.SendFile(credential, fstream);
+
+            //Assert.AreEqual(server.uploadFile(fstream), file.hash);
+            //fstream.Close();
+            
             file = (FBFile)new FBFileBuilder(@"asd\due.txt").generate();
-            string[] lines1 = { token + "First line", "Second line", "Third lines" };
+            string[] lines1 = {"First line", "Second line", "Third lines" };
             System.IO.File.WriteAllLines(@"asd\due.txt", lines1);
             fstream = new FileStream(@"asd\due.txt", FileMode.Open, FileAccess.Read);
-            Assert.AreEqual(server.uploadFile(fstream), file.hash);
-            fstream.Close();
 
-            Assert.IsTrue(server.commit(token));
+            credential = server.uploadFile(new SerializedFile(file.serialize()));
+            this.SendFile(credential, fstream);
+            System.Threading.Thread.Sleep(1000);
+            Assert.IsTrue(server.commit());
+        }
+
+        public static bool ValidateServerCertificate(
+              object sender,
+              X509Certificate certificate,
+              X509Chain chain,
+              SslPolicyErrors sslPolicyErrors)
+        {
+            X509Certificate cert = new X509Certificate("certificate\\certificate.cer");
+            if (cert.Equals(cert))
+                return true;
+            return false;
+        }
+
+        private void SendFile(UploadData credential, FileStream fstream)
+        {
+            System.Threading.Thread.Sleep(100);
+            TcpClient client = new TcpClient("127.0.0.1", credential.port);
+            SslStream ssl = new SslStream(
+                client.GetStream(), false,
+                new RemoteCertificateValidationCallback(ValidateServerCertificate),
+                null, EncryptionPolicy.RequireEncryption);
+            try
+            {
+                ssl.AuthenticateAsClient("127.0.0.1", null, System.Security.Authentication.SslProtocols.Tls12, false);
+                ssl.Write(UsefullMethods.GetBytesFromString(credential.token));
+                fstream.CopyTo(ssl);
+                ssl.Close();
+                fstream.Close();
+            }
+            catch {  }
         }
 
         [TestMethod]
@@ -80,11 +123,9 @@ namespace FolderBackup.ServerTests
             FBVersionBuilder vb = new FBVersionBuilder(rinfo.FullName);
             FolderBackup.Shared.FBVersion v = (FolderBackup.Shared.FBVersion)vb.generate();
 
-            SerializedVersion serV = new SerializedVersion();
-            serV.encodedVersion = v.serialize();
+            SerializedVersion serV = new SerializedVersion(v.serialize());
 
-
-            Assert.IsTrue(server.newTransaction(token, serV));
+            Assert.IsTrue(server.newTransaction(serV));
         }
 
         [TestMethod]
@@ -93,13 +134,12 @@ namespace FolderBackup.ServerTests
             FBVersionBuilder vb = new FBVersionBuilder(rinfo.FullName);
             FolderBackup.Shared.FBVersion v = (FolderBackup.Shared.FBVersion)vb.generate();
 
-            SerializedVersion serV = new SerializedVersion();
-            serV.encodedVersion = v.serialize();
+            SerializedVersion serV = new SerializedVersion(v.serialize());
 
 
-            Assert.IsTrue(server.newTransaction(token, serV));
+            Assert.IsTrue(server.newTransaction(serV));
 
-            byte[][] bfiles = server.getFilesToUpload(token);
+            byte[][] bfiles = server.getFilesToUpload();
             foreach (byte[] bf in bfiles)
             {
                 FBFile f = FBFile.deserialize(bf);
@@ -107,24 +147,28 @@ namespace FolderBackup.ServerTests
             }
 
             FBFile file = (FBFile)new FBFileBuilder(@"asd\uno.txt").generate();
-            string[] lines = { token + "First line", "Second line", "Third line" };
+            string[] lines = {"First line", "Second line", "Third line" };
             System.IO.File.WriteAllLines(@"asd\uno.txt", lines);
             FileStream fstream = new FileStream(@"asd\uno.txt", FileMode.Open, FileAccess.Read);
-            Assert.AreEqual(server.uploadFile(fstream), file.hash);
-            fstream.Close();
+            //Assert.AreEqual(server.uploadFile(fstream), file.hash);
+            //fstream.Close();
+            UploadData credential = server.uploadFile(new SerializedFile(file.serialize()));
+            this.SendFile(credential, fstream);
 
             file = (FBFile)new FBFileBuilder(@"asd\due.txt").generate();
-            string[] lines1 = { token + "First line", "Second line", "Third lines" };
+            string[] lines1 = {"First line", "Second line", "Third lines" };
             System.IO.File.WriteAllLines(@"asd\due.txt", lines1);
             fstream = new FileStream(@"asd\due.txt", FileMode.Open, FileAccess.Read);
-            Assert.AreEqual(server.uploadFile(fstream), file.hash);
-            fstream.Close();
+            //Assert.AreEqual(server.uploadFile(fstream), file.hash);
+            //fstream.Close();
+            credential = server.uploadFile(new SerializedFile(file.serialize()));
+            this.SendFile(credential, fstream);
+            
+            Assert.IsTrue(server.rollback());
 
-            Assert.IsTrue(server.rollback(token));
+            Assert.IsTrue(server.newTransaction(serV));
 
-            Assert.IsTrue(server.newTransaction(token, serV));
-
-            bfiles = server.getFilesToUpload(token);
+            bfiles = server.getFilesToUpload();
             foreach (byte[] bf in bfiles)
             {
                 FBFile f = FBFile.deserialize(bf);
@@ -135,15 +179,18 @@ namespace FolderBackup.ServerTests
         [TestCleanup]
         public void CleanUp()
         {
-            System.IO.Directory.Delete("asd", true);
-            foreach (FileInfo f in FolderBackup.Server.Server.getSessionByToken(token).user.rootDirectory.GetFiles())
-            {
-                f.Delete();
-            }
-            foreach (DirectoryInfo d in FolderBackup.Server.Server.getSessionByToken(token).user.rootDirectory.GetDirectories())
-            {
-                d.Delete(true);
-            }
+            if(System.IO.Directory.Exists("asd"))
+                System.IO.Directory.Delete("asd", true);
+            if(server.session.user.rootDirectory.GetFiles() != null)
+                foreach (FileInfo f in server.session.user.rootDirectory.GetFiles())
+                {
+                    f.Delete();
+                }
+            if(server.session.user.rootDirectory.GetDirectories() != null)
+                foreach (DirectoryInfo d in server.session.user.rootDirectory.GetDirectories())
+                {
+                    d.Delete(true);
+                }
         }
     }
 }

@@ -94,8 +94,7 @@ namespace FolderBackup.Server
             try
             {
                 FBVersion version = currentVersion();
-                SerializedVersion serVersion = new SerializedVersion();
-                serVersion.encodedVersion = version.serialize();
+                SerializedVersion serVersion = new SerializedVersion(version.serialize());
 
                 return serVersion;
             }
