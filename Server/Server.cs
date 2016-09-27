@@ -16,12 +16,13 @@ using System.IO.Compression;
 namespace FolderBackup.Server
 {
     public delegate void NotifyErrorReceiving(string token);
-    public delegate void NotifyReceiveComplete(FBFile file);
+    public delegate void NotifyReceiveComplete(FBFile file, PhysicFile pf);
 
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Single, InstanceContextMode = InstanceContextMode.PerSession)]
     public class Server : IBackupService
     {
         public Session session;
+        private List<SecureChannel> channels = new List<SecureChannel>();
 
         public Server()
         {
@@ -123,9 +124,11 @@ namespace FolderBackup.Server
             return session.rollback();
         }
 
-        public void ManageCompleteUpload(FBFile f)
+        public void ManageCompleteUpload(FBFile f, PhysicFile pf)
         {
+            this.session.uploadedFiles.add(pf);
 
+            this.session.necessaryFiles.Remove(f);
         }
 
         public void ManageFailedUpload(string token)
@@ -135,9 +138,11 @@ namespace FolderBackup.Server
 
         public UploadData uploadFile(SerializedFile fileStream)
         {
-            string token = Server.GetUniqueKey(10);
+            Console.WriteLine("ASD");
+            string token = Server.GetUniqueKey(20);
             SecureChannel channel = new SecureChannel(this, token, this.ManageCompleteUpload, this.ManageFailedUpload);
             UInt16 port = channel.port;
+            this.channels.Add(channel);
 
             return new UploadData(port, token);
         }
@@ -154,8 +159,7 @@ namespace FolderBackup.Server
             int i = 0;
             foreach (FBVersion ver in versions)
             {
-                svers[i] = new SerializedVersion();
-                svers[i++].encodedVersion = ver.serialize();
+                svers[i++] = new SerializedVersion(ver.serialize());
             }
 
             return svers;

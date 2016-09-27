@@ -20,12 +20,13 @@ namespace FolderBackup.Server
 {
     class SecureChannel
     {
-        static private X509Certificate certificate;
+        static private X509Certificate2 certificate;
         private Server server;
         private string token;
         private TcpListener listener;
         private Thread thread;
         private AutoResetEvent start;
+        private AutoResetEvent clientConnected;
         private NotifyReceiveComplete completeEvent;
         private NotifyErrorReceiving errorEvent;
         private Session session;
@@ -35,21 +36,26 @@ namespace FolderBackup.Server
         {
             if (certificate == null)
             {
-                certificate = new X509Certificate("Server.cer");
+                System.Console.WriteLine(Directory.GetCurrentDirectory());
+                certificate = new X509Certificate2("Certificates\\certificate.pfx", "");
             }
             this.token = token;
             this.server = server;
             this.session = this.server.session;
-            this.listener = new TcpListener(IPAddress.Any, 0);
+            this.listener = new TcpListener(IPAddress.Any,
+                UsefullMethods.GetAvailablePort(30000));
             this.thread = new Thread(this.ThreadCode);
             this.errorEvent = errorEvent;
             this.completeEvent = completeEvent;
+            this.start = new AutoResetEvent(false);
+            this.clientConnected = new AutoResetEvent(false);
+            this.thread.Start();
         }
 
         public UInt16 port
         {
             get
-            { 
+            {
                 UInt16 ret = (UInt16)((IPEndPoint)listener.LocalEndpoint).Port;
                 start.Set();
                 return ret;
@@ -58,12 +64,13 @@ namespace FolderBackup.Server
 
         private void ThreadCode()
         {
+            Console.WriteLine("BOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOM");
             start.WaitOne();
 
             this.listener.Start(1);
-            var sockl = new ArrayList {listener};
+            var sockl = new ArrayList {listener.Server};
             Socket.Select(sockl, null, null, 5000 * 1000);
-            if(!sockl.Contains(listener))
+            if(!sockl.Contains(listener.Server))
             {
                 this.errorEvent(token);
                 return;
@@ -79,7 +86,7 @@ namespace FolderBackup.Server
 
                 SaveFile(ssl);
             }
-            catch(SocketException e)
+            catch(Exception e)
             {
                 this.errorEvent(token);
                 return;
@@ -91,13 +98,7 @@ namespace FolderBackup.Server
             string token = "";
             char[] chars = new char[20];
 
-            if (!Directory.Exists("tmp")) Directory.CreateDirectory("tmp");
-            SaveStreamToFile(fileStream, "tmp\\prova");
-            fileStream.Close();
-
-            FileStream fs = new FileStream("tmp\\prova", FileMode.Open, FileAccess.Read);
-
-            StreamReader sr = new StreamReader(fs, Encoding.Default);
+            StreamReader sr = new StreamReader(fileStream, Encoding.Default);
             sr.Read(chars, 0, 20);
             foreach (char c in chars)
             {
@@ -109,7 +110,7 @@ namespace FolderBackup.Server
                 this.errorEvent(this.token);
                 return;
             }
-            
+            this.uploadFile(fileStream);
         }
 
         private void uploadFile(Stream fileStream)
@@ -117,7 +118,7 @@ namespace FolderBackup.Server
             string path = this.session.user.rootDirectory.FullName + "\\" + DateTime.UtcNow.ToString("yyyy_MM_dd_HH_mm_ss_fff", CultureInfo.InvariantCulture);
             FBFile newFile;
             FBFileBuilder fb;
-            fileStream.Seek(20, SeekOrigin.Begin);
+            
             SaveStreamToFile(fileStream, path);
             fb = new FBFileBuilder(path);
             newFile = (FBFile)fb.generate();
@@ -125,12 +126,12 @@ namespace FolderBackup.Server
             if (!this.session.necessaryFiles.Contains(newFile))
             {
                 File.Delete(path);
-                throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.FILENOTNECESSARY));
+                this.errorEvent(token);
+                return;
             }
 
-            this.session.uploadedFiles.add(new PhysicFile(newFile, path));
+            this.completeEvent(newFile, new PhysicFile(newFile, path));
 
-            this.session.necessaryFiles.Remove(newFile);
         }
 
         private static void SaveStreamToFile(System.IO.Stream stream, string filePath)
