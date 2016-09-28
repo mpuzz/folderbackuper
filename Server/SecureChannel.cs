@@ -64,7 +64,6 @@ namespace FolderBackup.Server
 
         private void ThreadCode()
         {
-            Console.WriteLine("BOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOM");
             start.WaitOne();
 
             this.listener.Start(1);
