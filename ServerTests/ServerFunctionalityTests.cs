@@ -181,13 +181,13 @@ namespace FolderBackup.ServerTests
         {
             if(System.IO.Directory.Exists("asd"))
                 System.IO.Directory.Delete("asd", true);
-            if(server.session.user.rootDirectory.GetFiles() != null)
-                foreach (FileInfo f in server.session.user.rootDirectory.GetFiles())
+            if(server.user.rootDirectory.GetFiles() != null)
+                foreach (FileInfo f in server.user.rootDirectory.GetFiles())
                 {
                     f.Delete();
                 }
-            if(server.session.user.rootDirectory.GetDirectories() != null)
-                foreach (DirectoryInfo d in server.session.user.rootDirectory.GetDirectories())
+            if(server.user.rootDirectory.GetDirectories() != null)
+                foreach (DirectoryInfo d in server.user.rootDirectory.GetDirectories())
                 {
                     d.Delete(true);
                 }

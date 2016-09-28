@@ -29,8 +29,7 @@ namespace FolderBackup.Server
         private AutoResetEvent clientConnected;
         private NotifyReceiveComplete completeEvent;
         private NotifyErrorReceiving errorEvent;
-        private Session session;
-
+        
         public SecureChannel(Server server, string token,
             NotifyReceiveComplete completeEvent, NotifyErrorReceiving errorEvent)
         {
@@ -41,7 +40,6 @@ namespace FolderBackup.Server
             }
             this.token = token;
             this.server = server;
-            this.session = this.server.session;
             this.listener = new TcpListener(IPAddress.Any,
                 UsefullMethods.GetAvailablePort(30000));
             this.thread = new Thread(this.ThreadCode);
@@ -114,7 +112,7 @@ namespace FolderBackup.Server
 
         private void uploadFile(Stream fileStream)
         {
-            string path = this.session.user.rootDirectory.FullName + "\\" + DateTime.UtcNow.ToString("yyyy_MM_dd_HH_mm_ss_fff", CultureInfo.InvariantCulture);
+            string path = this.server.user.rootDirectory.FullName + "\\" + DateTime.UtcNow.ToString("yyyy_MM_dd_HH_mm_ss_fff", CultureInfo.InvariantCulture);
             FBFile newFile;
             FBFileBuilder fb;
             
@@ -122,7 +120,7 @@ namespace FolderBackup.Server
             fb = new FBFileBuilder(path);
             newFile = (FBFile)fb.generate();
 
-            if (!this.session.necessaryFiles.Contains(newFile))
+            if (!this.server.necessaryFiles.Contains(newFile))
             {
                 File.Delete(path);
                 this.errorEvent(token);
