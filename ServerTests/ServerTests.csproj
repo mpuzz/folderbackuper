@@ -54,6 +54,7 @@
     <Compile Include="AuthenticationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerFunctionalityTests.cs" />
+    <Compile Include="RegistrationTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommunicationProtocol\CommunicationProtocol.csproj">

@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using FolderBackup.Shared;
 
-namespace ServerTests
+namespace FolderBackup.ServerTests
 {
     [TestClass]
     public class AuthenticationTests
