@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
 
 namespace FolderBackup.Shared
 {
@@ -34,5 +36,18 @@ namespace FolderBackup.Shared
                 return sb.ToString();
             }
         }
+
+        public static bool ValidateServerCertificate(
+              object sender,
+              X509Certificate certificate,
+              X509Chain chain,
+              SslPolicyErrors sslPolicyErrors)
+        {
+            X509Certificate cert = new X509Certificate("certificate\\certificate.cer");
+            if (cert.Equals(cert))
+                return true;
+            return false;
+        }
+
     }
 }

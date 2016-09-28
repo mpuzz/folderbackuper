@@ -79,25 +79,14 @@ namespace FolderBackup.ServerTests
             Assert.IsTrue(server.commit());
         }
 
-        public static bool ValidateServerCertificate(
-              object sender,
-              X509Certificate certificate,
-              X509Chain chain,
-              SslPolicyErrors sslPolicyErrors)
-        {
-            X509Certificate cert = new X509Certificate("certificate\\certificate.cer");
-            if (cert.Equals(cert))
-                return true;
-            return false;
-        }
-
+        
         private void SendFile(UploadData credential, FileStream fstream)
         {
             System.Threading.Thread.Sleep(100);
             TcpClient client = new TcpClient("127.0.0.1", credential.port);
             SslStream ssl = new SslStream(
                 client.GetStream(), false,
-                new RemoteCertificateValidationCallback(ValidateServerCertificate),
+                new RemoteCertificateValidationCallback(AuthenticationPrimitives.ValidateServerCertificate),
                 null, EncryptionPolicy.RequireEncryption);
             try
             {
