@@ -34,7 +34,6 @@ namespace FolderBackup.Server
 
         public DirectoryInfo transactDir
         {
-
             get
             {
                 return this.transactionEnabled ? this.ptransactDir : null;

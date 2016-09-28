@@ -132,5 +132,19 @@ namespace FolderBackup.Server
             mtr.Rollback();
             return false;
         }
+
+        public void Delete(string username)
+        {
+            MySqlTransaction mtr = this.connection.BeginTransaction();
+            MySqlCommand cmd = new MySqlCommand("SELECT * FROM users FOR UPDATE", connection, mtr);
+            cmd.Prepare();
+            cmd.ExecuteReader().Close();
+
+            cmd = new MySqlCommand("DELETE FROM users WHERE username like @usern", connection, mtr);
+            cmd.Prepare();
+            cmd.Parameters.AddWithValue("@usern", username);
+            cmd.ExecuteReader().Close();
+            mtr.Commit();
+        }
     }
 }

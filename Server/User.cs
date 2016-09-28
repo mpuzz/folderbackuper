@@ -37,5 +37,10 @@ namespace FolderBackup.Server
         {
             return DatabaseManager.getInstance().register(username, password, salt);
         }
+
+        public void Delete()
+        {
+            DatabaseManager.getInstance().Delete(this.username);
+        }
     }
 }
