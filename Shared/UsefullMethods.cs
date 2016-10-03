@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -54,6 +55,27 @@ namespace FolderBackup.Shared
                     return i;
 
             return 0;
+        }
+
+        public static void SaveStreamToFile(System.IO.Stream stream, string filePath)
+        {
+            FileStream outstream = File.Open(filePath, FileMode.Create, FileAccess.Write);
+            CopyStream(stream, outstream);
+            outstream.Close();
+            stream.Close();
+        }
+
+        public static void CopyStream(System.IO.Stream instream, System.IO.Stream outstream)
+        {
+            const int bufferLen = 4096;
+            byte[] buffer = new byte[bufferLen];
+            int count = 0;
+            int bytecount = 0;
+            while ((count = instream.Read(buffer, 0, bufferLen)) > 0)
+            {
+                outstream.Write(buffer, 0, count);
+                bytecount += count;
+            }
         }
     }
 }
