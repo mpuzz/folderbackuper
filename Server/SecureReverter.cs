@@ -23,6 +23,8 @@ namespace FolderBackup.Server
         protected override void ServeRequest(Stream ssl)
         {
             UsefullMethods.CopyStream(this.fileStream, ssl);
+            ssl.Close();
+            fileStream.Close();
         }
     }
 }
