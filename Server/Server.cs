@@ -21,7 +21,7 @@ namespace FolderBackup.Server
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Single, InstanceContextMode = InstanceContextMode.PerSession)]
     public class Server : IBackupService
     {
-        private List<SecureChannel> channels = new List<SecureChannel>();
+        private List<SecureUploader> channels = new List<SecureUploader>();
 
         public ThreadSafeList<FBFile> necessaryFiles;
         private PhysicFilesList realFiles;
@@ -327,7 +327,7 @@ namespace FolderBackup.Server
         public UploadData uploadFile(SerializedFile fileStream)
         {
             string token = Server.GetUniqueKey(20);
-            SecureChannel channel = new SecureChannel(this, token, this.ManageCompleteUpload, this.ManageFailedUpload);
+            SecureUploader channel = new SecureUploader(this, token, this.ManageCompleteUpload, this.ManageFailedUpload);
             UInt16 port = channel.port;
             this.channels.Add(channel);
 
@@ -389,7 +389,7 @@ namespace FolderBackup.Server
             return svers;
         }
 
-        public UInt16 resetToPreviousVersion(int versionAgo)
+        public UploadData resetToPreviousVersion(int versionAgo)
         {
             var directories = Directory.EnumerateDirectories(user.rootDirectory.FullName).OrderByDescending(filename => filename);
             
@@ -457,7 +457,13 @@ namespace FolderBackup.Server
             zip.CreateEntryFromFile(this.user.rootDirectory + @"\instructions.bin", "instructions.bin", CompressionLevel.Optimal);
             File.Delete(this.user.rootDirectory + @"\instructions.bin");
             //return new FileStream(user.rootDirectory.FullName + @"\tmp.zip", FileMode.Open, FileAccess.Read);
-            return 0;
+
+            string token = Server.GetUniqueKey(20);
+            SecureReverter sr = new SecureReverter(this, token,
+                this.ManageCompleteUpload, this.ManageFailedUpload, FilesStream);
+            UInt16 port = sr.port;
+
+            return new UploadData(port, token);
         }
     }
 }

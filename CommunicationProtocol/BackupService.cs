@@ -25,7 +25,7 @@ namespace FolderBackup.CommunicationProtocol
 
         public byte[][] getFilesToUpload() { return null; }
 
-        public UInt16 resetToPreviousVersion(int versionAgo) { return 0; }
+        public UploadData resetToPreviousVersion(int versionAgo) { return null; }
 
         public SerializedVersion[] getOldVersions() { return null; }
     }

@@ -53,7 +53,7 @@ namespace FolderBackup.CommunicationProtocol
 
         [OperationContract]
         [FaultContract(typeof(ServiceErrorMessage))]
-        UInt16 resetToPreviousVersion(int versionAgo);
+        UploadData resetToPreviousVersion(int versionAgo);
 
         [OperationContract]
         [FaultContract(typeof(ServiceErrorMessage))]
