@@ -47,7 +47,7 @@ namespace FolderBackup.Client
             }
             string token;
             BackupServiceClient server = logIn(username, password, out token);
-            if (server == null) return;
+            if (server == null) return;//mostra qlc di errore
             MessageBox.Show(this, "Log in succeed!");
         }
 
@@ -81,7 +81,7 @@ namespace FolderBackup.Client
                 ad = server.authStep1(username);
             }
             catch
-            {
+            { // catch only foultexception guarda meglio il nome
                 MessageBox.Show(this, "Username doesn't exist.", "Wrong username", MessageBoxButton.OK);
                 token = null;
                 return null;
