@@ -6,6 +6,8 @@ using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace FolderBackup.Shared
 {
@@ -75,6 +77,40 @@ namespace FolderBackup.Shared
             {
                 outstream.Write(buffer, 0, count);
                 bytecount += count;
+            }
+        }
+
+        public static void setLabelAlert(string type, Label el, string text)
+        {
+            if (type == "success")
+            {   
+                el.Content = text;
+                Color c = (Color)ColorConverter.ConvertFromString("#FFdff0d8");
+                el.Background = new SolidColorBrush(c);
+                c = (Color)ColorConverter.ConvertFromString("#FFd6e9c6");
+                el.BorderBrush = new SolidColorBrush(c);
+                c = (Color)ColorConverter.ConvertFromString("#FF3c763d");
+                el.Foreground = new SolidColorBrush(c);
+            }
+            else if (type == "danger")
+            {
+                el.Content = text;
+                Color c = (Color)ColorConverter.ConvertFromString("#FFF2DeDe");
+                el.Background = new SolidColorBrush(c);
+                c = (Color)ColorConverter.ConvertFromString("#FFebccc1");
+                el.BorderBrush = new SolidColorBrush(c);
+                c = (Color)ColorConverter.ConvertFromString("#FFa94442");
+                el.Foreground = new SolidColorBrush(c);
+            }
+            else if (type == "none")
+            {
+                el.Content = text;
+                Color c = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
+                el.Background = new SolidColorBrush(c);
+                c = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
+                el.BorderBrush = new SolidColorBrush(c);
+                c = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
+                el.Foreground = new SolidColorBrush(c);
             }
         }
     }
