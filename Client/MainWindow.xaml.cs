@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using FolderBackup.CommunicationProtocol;
 using FolderBackup.Shared;
 using System.IO;
+using System.Threading;
 
 namespace FolderBackup.Client
 {
@@ -23,9 +24,15 @@ namespace FolderBackup.Client
     /// </summary>
     public partial class MainWindow : Window
     {
+        Config conf = Config.Instance();
+
         public MainWindow()
         {
             InitializeComponent();
+            if (conf.userName.get() != null)
+            {
+                this.usernameTxtBox.Text = conf.userName.get();
+            }
             
         }
 
@@ -36,19 +43,31 @@ namespace FolderBackup.Client
 
             if (username.Equals(""))
             {
-                MessageBox.Show(this, "Username cannot be empty!", "Missing username", MessageBoxButton.OK);
+                UsefullMethods.setLabelAlert("danger", this.errorBox, "Missing username! Username field cannot be empty.");
                 return;
             }
 
             if (password.Equals(""))
             {
-                MessageBox.Show(this, "Password cannot be empty!", "Missing password", MessageBoxButton.OK);
+                UsefullMethods.setLabelAlert("danger", this.errorBox, "Missing password! Password field cannot be empty.");
                 return;
             }
             string token;
             BackupServiceClient server = logIn(username, password, out token);
             if (server == null) return;//mostra qlc di errore
-            MessageBox.Show(this, "Log in succeed!");
+            UsefullMethods.setLabelAlert("success", this.errorBox, "Log in succeed!");
+            conf.userName.set(this.usernameTxtBox.Text);
+            Thread.Sleep(500);
+            string targetPath = conf.targetPath.get();
+            // if the path is not setted a windows for selecting the path must be shown
+            if (targetPath == null)
+            {
+                WelcomeWindows ww = new WelcomeWindows();
+                ww.parent = this;
+                ww.Show();
+                ww.Activate();
+                this.Hide();
+            }
         }
 
         private void Label_MouseEnter(object sender, MouseEventArgs e)
@@ -82,7 +101,7 @@ namespace FolderBackup.Client
             }
             catch
             { // catch only foultexception guarda meglio il nome
-                MessageBox.Show(this, "Username doesn't exist.", "Wrong username", MessageBoxButton.OK);
+                UsefullMethods.setLabelAlert("danger", this.errorBox, "Username doesn't exist!");
                 token = null;
                 return null;
             }
@@ -93,7 +112,7 @@ namespace FolderBackup.Client
             }
             catch
             {
-                MessageBox.Show(this, "Wrong Password", "", MessageBoxButton.OK);
+                UsefullMethods.setLabelAlert("danger", this.errorBox, "Wrong password!");
                 token = null;
                 return null;
             }

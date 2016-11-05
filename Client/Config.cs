@@ -34,11 +34,12 @@ namespace FolderBackup.Client
         private static String basePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"/FolderBackuper/";
         private static String fileName = basePath + @"config.conf";
         public ConfigAttribute<String> userName;
+        public ConfigAttribute<String> targetPath;
         private static Config instance;
 
         private Config() {
             userName = new ConfigAttribute<String>();
-
+            targetPath = new ConfigAttribute<String>();
         }
         public void Serialize()
         {
