@@ -43,7 +43,7 @@ namespace FolderBackup.Shared
               X509Chain chain,
               SslPolicyErrors sslPolicyErrors)
         {
-            X509Certificate cert = new X509Certificate("Certificates\\certificate.pfx");
+            X509Certificate cert = new X509Certificate("Certificates\\certificate.pfx","malnati");
             if (cert.Equals(cert))
                 return true;
             return false;

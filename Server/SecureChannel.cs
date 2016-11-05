@@ -43,7 +43,7 @@ namespace FolderBackup.Server
             if (certificate == null)
             {
                 System.Console.WriteLine(Directory.GetCurrentDirectory());
-                certificate = new X509Certificate2("Certificates\\certificate.pfx", "");
+                certificate = new X509Certificate2("Certificates\\certificate.pfx", "malnati");
             }
             this.token = token;
             this.server = server;
