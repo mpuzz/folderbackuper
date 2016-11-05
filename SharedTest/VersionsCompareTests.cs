@@ -4,12 +4,12 @@ using FolderBackup.Shared;
 using System.IO;
 using System.Collections.Generic;
 
-namespace SharedTest
+namespace FolderBackup.SharedTest
 {
     [TestClass]
     public class VersionsCompareTests
     {
-     /*   [TestMethod]
+        [TestMethod]
         public void NecessaryFilesToUpgradeTest()
         {
             string[] lines1 = { "First line", "Second line", "Third line" };
@@ -29,7 +29,9 @@ namespace SharedTest
             System.IO.File.WriteAllLines(@"asd\sette.txt", lines1);
             FolderBackup.Shared.FBVersion vnew = (FolderBackup.Shared.FBVersion)vb.generate();
 
-            List<FBFile> fl = FBVersion.getNecessaryFilesToUpgrade(vnew, vold);
+            FBVersion diff = vnew - vold;
+
+            List<FBFile> fl = FBVersion.getNecessaryFilesToUpgrade(vnew, vold.fileList);
 
             Assert.AreEqual(fl.Count, 1);
             FBFileBuilder fb = new FBFileBuilder(@"asd\ciao\cinque.txt");
@@ -37,6 +39,6 @@ namespace SharedTest
             Assert.AreEqual(fl[0], necessary);
 
             System.IO.Directory.Delete("asd", true);
-        }*/
+        }
     }
 }
