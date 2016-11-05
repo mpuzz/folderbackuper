@@ -19,7 +19,15 @@ namespace FolderBackup.Shared
         {
             get
             {
-                return root.fileList;
+                try
+                {
+                    return root.fileList;
+                }
+                catch
+                {
+                    return null;
+                }
+                
             }
         }
 

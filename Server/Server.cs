@@ -273,7 +273,8 @@ namespace FolderBackup.Server
                 serializer.Serialize(FileStream, this.inSyncVersion);
                 FileStream.Close();
 
-                realFiles.add(this.uploadedFiles);
+                if(this.uploadedFiles != null)
+                    realFiles.add(this.uploadedFiles);
 
                 FileStream = File.Open(this.user.rootDirectory + @"\files.bin", FileMode.Create, FileAccess.Write, FileShare.None);
                 serializer.Serialize(FileStream, realFiles);
@@ -403,7 +404,7 @@ namespace FolderBackup.Server
             FBVersion diff = old - actual;
 
             old.setAbsoluteNameToFile();
-            diff.setAbsoluteNameToFile();
+            if(diff.root != null) diff.setAbsoluteNameToFile();
             actual.setAbsoluteNameToFile();
 
             List<Instruction> instrucionList = new List<Instruction>();
@@ -413,41 +414,43 @@ namespace FolderBackup.Server
 
             ZipArchive zip = ZipFile.Open(user.rootDirectory.FullName + @"\tmp.zip", ZipArchiveMode.Update);
 
-            foreach (FBAbstractElement to in diff.fileList)
-            {
-                bool found = false;
-                foreach (FBAbstractElement from in actual.fileList)
+            if(diff.fileList != null)
+                foreach (FBAbstractElement to in diff.fileList)
                 {
-                    if (from.Equals(to))
+                    bool found = false;
+                    foreach (FBAbstractElement from in actual.fileList)
                     {
-                        found = true;
-                        instrucionList.Add(new Instruction(InstructionType.COPY, from.Name, to.Name));
-                        break;
-                    }
-                }
-
-                if (!found)
-                {
-                    foreach (PhysicFile ph in realFiles.list)
-                    {
-                        if (ph.getFBFile().Equals(to))
+                        if (from.Equals(to))
                         {
-                            if (zip.GetEntry(ph.getRealFileInfo().Name) != null)
+                            found = true;
+                            instrucionList.Add(new Instruction(InstructionType.COPY, from.Name, to.Name));
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        foreach (PhysicFile ph in realFiles.list)
+                        {
+                            if (ph.getFBFile().Equals(to))
                             {
-                                zip.CreateEntryFromFile(ph.getRealFileInfo().FullName, ph.getRealFileInfo().Name, CompressionLevel.Optimal);
+                                if (zip.GetEntry(ph.getRealFileInfo().Name) != null)
+                                {
+                                    zip.CreateEntryFromFile(ph.getRealFileInfo().FullName, ph.getRealFileInfo().Name, CompressionLevel.Optimal);
+                                }
+                                instrucionList.Add(new Instruction(InstructionType.NEW, ph.getRealFileInfo().Name, to.Name));
                             }
-                            instrucionList.Add(new Instruction(InstructionType.NEW, ph.getRealFileInfo().Name, to.Name));
                         }
                     }
                 }
-            }
 
             diff = actual - old;
 
-            foreach (FBAbstractElement toDelete in diff.fileList)
-            {
-                instrucionList.Add(new Instruction(InstructionType.DELETE, toDelete.Name, ""));
-            }
+            if(diff.fileList != null)
+                foreach (FBAbstractElement toDelete in diff.fileList)
+                {
+                    instrucionList.Add(new Instruction(InstructionType.DELETE, toDelete.Name, ""));
+                }
 
             Stream FilesStream = File.OpenWrite(this.user.rootDirectory + @"\instructions.bin");
             BinaryFormatter serializer = new BinaryFormatter();
