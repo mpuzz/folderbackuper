@@ -16,6 +16,7 @@ using FolderBackup.CommunicationProtocol;
 using FolderBackup.Shared;
 using System.IO;
 using System.Threading;
+using System.ServiceModel;
 
 namespace FolderBackup.Client
 {
@@ -58,6 +59,7 @@ namespace FolderBackup.Client
             UsefullMethods.setLabelAlert("success", this.errorBox, "Log in succeed!");
             conf.userName.set(this.usernameTxtBox.Text);
             Thread.Sleep(500);
+            this.Hide();
             string targetPath = conf.targetPath.get();
             // if the path is not setted a windows for selecting the path must be shown
             if (targetPath == null)
@@ -66,7 +68,6 @@ namespace FolderBackup.Client
                 ww.parent = this;
                 ww.Show();
                 ww.Activate();
-                this.Hide();
             }
         }
 
@@ -99,9 +100,14 @@ namespace FolderBackup.Client
             {
                 ad = server.authStep1(username);
             }
-            catch
-            { // catch only foultexception guarda meglio il nome
+            catch(FaultException)
+            {
                 UsefullMethods.setLabelAlert("danger", this.errorBox, "Username doesn't exist!");
+                token = null;
+                return null;
+            }catch
+            {
+                UsefullMethods.setLabelAlert("danger", this.errorBox, "No internet connection! Check it and retry");
                 token = null;
                 return null;
             }
@@ -110,9 +116,15 @@ namespace FolderBackup.Client
             {
                 token = server.authStep2(ad.token, username, AuthenticationPrimitives.hashPassword(password, ad.salt, ad.token));
             }
-            catch
+            catch (FaultException)
             {
                 UsefullMethods.setLabelAlert("danger", this.errorBox, "Wrong password!");
+                token = null;
+                return null;
+            }
+            catch
+            {
+                UsefullMethods.setLabelAlert("danger", this.errorBox, "No internet connection! Check it and retry");
                 token = null;
                 return null;
             }

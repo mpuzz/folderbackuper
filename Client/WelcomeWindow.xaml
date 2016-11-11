@@ -15,8 +15,8 @@
         <Label x:Name="title" Height="49" Content="Welcome!" VerticalAlignment="Top" FontSize="36" FontFamily="Calibri" Margin="27,20,17,0"/>
         <Label x:Name="explanation" Height="35" Content="Please select the folder that you want to sync." VerticalAlignment="Top" FontSize="14" FontFamily="Calibri" Margin="27,85,17,0"/>
         <TextBox x:Name="pathTxtBox" LostFocus="lostFocusHandler" GotFocus="gotFocusHandler" Height="23" TextWrapping="Wrap" Text="" VerticalAlignment="Top" TextChanged="pathTxtBox_TextChanged" FontFamily="Calibri" Margin="27,127,52,0" />
-        <Button x:Name="submit" Content="Ok"  Click="okButton_Click" Background="White" Margin="143,198,142,0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Center" Width="72"/>
-        <Label x:Name="errorBox" Content="" Background="White" FontSize="12" Foreground="#FFCC0000" FontFamily="Calibri" BorderThickness="1" Margin="27,158,17,50"/>
+        <Label x:Name="errorBox" Content="" Background="White" FontSize="12" Foreground="#FFCC0000" FontFamily="Calibri" BorderThickness="1" Margin="27,158,17,47" Height="35"/>
+        <Button x:Name="button1" Content="Ok" Click="okButton_Click" Background="White" Margin="136,200,136,0" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>

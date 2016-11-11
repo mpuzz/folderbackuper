@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using FolderBackup.Shared;
+using System.Threading;
 
 namespace FolderBackup.Client
 {
@@ -34,13 +35,13 @@ namespace FolderBackup.Client
 
             if (username.Equals(""))
             {
-                MessageBox.Show(this, "Username cannot be empty!", "Missing username", MessageBoxButton.OK);
+                UsefullMethods.setLabelAlert("danger", this.errorBox, "Missing username! Username field cannot be empty.");
                 return;
             }
 
             if (password.Equals(""))
             {
-                MessageBox.Show(this, "Password cannot be empty!", "Missing password", MessageBoxButton.OK);
+                UsefullMethods.setLabelAlert("danger", this.errorBox, "Missing password! Password field cannot be empty.");
                 return;
             }
 
@@ -48,20 +49,21 @@ namespace FolderBackup.Client
             string salt = server.registerStep1(username);
             if (salt == null)
             {
-                MessageBox.Show(this, "Username already choosen! Try another!", "Registration problem", MessageBoxButton.OK);
+                UsefullMethods.setLabelAlert("danger", this.errorBox, "Username already choosen! Try another!");
                 return;
                 
             }
             if (server.registerStep2(username, AuthenticationPrimitives.hashPassword(password, salt), salt))
             {
-                MessageBox.Show(this, "Registration succeed. You can log in now.", "Registration succeed!", MessageBoxButton.OK);
+                UsefullMethods.setLabelAlert("danger", this.errorBox, "Registration succeed. You can log in now.");
+                Thread.Sleep(500);
                 this.Hide();
                 this.parent.Activate();
                 this.parent.Show();
             }
             else
             {
-                MessageBox.Show(this, "Registration procedure failed!", "Error", MessageBoxButton.OK);
+                UsefullMethods.setLabelAlert("danger", this.errorBox, "Registration procedure failed!");
             }
         }
 

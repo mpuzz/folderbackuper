@@ -3,13 +3,14 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="RegisterWindow" Height="245" Width="372" Closing="Window_Closing">
     <Grid RenderTransformOrigin="0.5,0.5" Margin="0" Background="White" VerticalAlignment="Top" HorizontalAlignment="Left" Width="364">
-        <Button x:Name="RegisterButton" Content="Register" HorizontalAlignment="Left" Margin="74,151,0,0" VerticalAlignment="Top" Width="90" Click="RegisterButton_Click" FontFamily="Calibri" FontSize="16" Background="White"/>
-        <Button Content="Clear" HorizontalAlignment="Left" Margin="204,151,0,0" VerticalAlignment="Top" Width="90" FontFamily="Calibri" FontSize="16" Background="White"/>
-        <Label Content="FolderBackup" HorizontalAlignment="Center" Margin="126,26,111,155" VerticalAlignment="Center" FontFamily="Calibri" FontSize="21" Height="38"/>
+        <Button x:Name="RegisterButton" Content="Register" HorizontalAlignment="Left" Margin="74,171,0,0" VerticalAlignment="Top" Width="90" Click="RegisterButton_Click" FontFamily="Calibri" FontSize="16" Background="White"/>
+        <Button Content="Clear" HorizontalAlignment="Left" Margin="204,171,0,0" VerticalAlignment="Top" Width="90" FontFamily="Calibri" FontSize="16" Background="White"/>
+        <Label Content="FolderBackup" HorizontalAlignment="Left" Margin="52,30,0,146" VerticalAlignment="Center" FontFamily="Calibri" FontSize="21" Height="38"/>
         <TextBox x:Name="usernameTxtBox" HorizontalAlignment="Left" Height="23" Margin="167,82,0,0" VerticalAlignment="Top" Width="157" TextWrapping="Wrap"/>
-        <PasswordBox x:Name="passwordTxtBox" HorizontalAlignment="Left" Margin="167,110,0,0" VerticalAlignment="Top" Height="23" Width="157"/>
-        <Label Content="Username" HorizontalAlignment="Left" Margin="55,77,0,0" VerticalAlignment="Top" Height="28" FontFamily="Calibri" FontSize="16"/>
-        <Label Content="Password" HorizontalAlignment="Left" Margin="55,105,0,0" VerticalAlignment="Top" Height="28" FontFamily="Calibri" FontSize="16"/>
+        <PasswordBox x:Name="passwordTxtBox" Margin="167,110,0,0" VerticalAlignment="Top" Height="23" HorizontalAlignment="Left" Width="157"/>
+        <Label Content="Username" HorizontalAlignment="Left" Margin="52,77,0,0" VerticalAlignment="Top" Height="28" FontFamily="Calibri" FontSize="16"/>
+        <Label Content="Password" HorizontalAlignment="Left" Margin="52,105,0,0" VerticalAlignment="Top" Height="28" FontFamily="Calibri" FontSize="16"/>
+        <Label x:Name="errorBox" Content="" Background="White" FontSize="12" Foreground="#FFCC0000" FontFamily="Calibri" BorderThickness="1" Height="25" VerticalAlignment="Bottom" Margin="52,0,0,49" HorizontalAlignment="Left" Width="273"/>
 
     </Grid>
 </Window>
