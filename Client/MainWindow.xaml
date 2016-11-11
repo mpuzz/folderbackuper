@@ -11,7 +11,7 @@
             <TextBox x:Name="usernameTxtBox" Height="23" VerticalAlignment="Bottom" TextWrapping="Wrap" Margin="162,0,53,166"/>
             <PasswordBox x:Name="paswordTxtBox" VerticalAlignment="Bottom" Height="23" Margin="162,0,53,134"/>
             <Button Content="Connect" VerticalAlignment="Bottom" Click="Button_Click" FontFamily="Calibri" FontSize="16" Background="White" Margin="82,0,0,61" HorizontalAlignment="Left" Width="75"/>
-            <Button Content="Clear" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" FontFamily="Calibri" FontSize="16" Background="White" Margin="0,0,70,61"/>
+            <Button Content="Clear" HorizontalAlignment="Right" Click="Clear_Click" VerticalAlignment="Bottom" Width="75" FontFamily="Calibri" FontSize="16" Background="White" Margin="0,0,70,61"/>
             <Label x:Name="registerLabel" Content="Not yet registered? Sign up!" VerticalAlignment="Bottom" Height="27" MouseEnter="Label_MouseEnter" MouseLeave="registerLabel_MouseLeave" MouseLeftButtonDown="registerLabel_MouseLeftButtonDown" FontFamily="Calibri" Margin="110,0,110,23"/>
             <Label Content="Username" VerticalAlignment="Bottom" Height="28" FontFamily="Calibri" FontSize="16" Margin="52,0,0,164" HorizontalAlignment="Left" Width="77"/>
             <Label Content="Password" VerticalAlignment="Bottom" Height="28" FontFamily="Calibri" FontSize="16" Margin="52,0,0,132" HorizontalAlignment="Left" Width="72"/>

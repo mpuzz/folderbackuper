@@ -24,13 +24,18 @@ namespace FolderBackup.Client
     {
         public Window parent { get; set; }
         private string PathBoxPlaceholder = "Insert path . . .";
+        Config conf = Config.Instance();
+
         public WelcomeWindows()
         {
             InitializeComponent();
             this.pathTxtBox.Text = PathBoxPlaceholder;
-            
         }
         
+        public void focusButtonHandler(object sender, EventArgs e) {
+            Color c = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
+            this.Background = new SolidColorBrush(c);
+        }
         public void gotFocusHandler(object sender, EventArgs e)
         {
             if (this.PathBoxPlaceholder == this.pathTxtBox.Text)
@@ -73,9 +78,20 @@ namespace FolderBackup.Client
         {
             if (Directory.Exists(this.pathTxtBox.Text))
             {
-
+                conf.targetPath.set(this.pathTxtBox.Text);
+                this.Hide();
             }
         }
-        
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            DialogResult dialogResult = System.Windows.Forms.MessageBox.Show("Are you sure you want to exit without setting the sync folder?", "Please enter the folder", MessageBoxButtons.YesNo);
+            if (dialogResult == System.Windows.Forms.DialogResult.Yes)
+            {
+                this.Hide();
+            }
+
+        }
+
     }
 }
+

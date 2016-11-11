@@ -36,7 +36,11 @@ namespace FolderBackup.Client
             }
             
         }
-
+        private void Clear_Click(object sender, RoutedEventArgs e)
+        {
+            this.usernameTxtBox.Text="";
+            this.paswordTxtBox.Password="";
+        }
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             string username = this.usernameTxtBox.Text;

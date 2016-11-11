@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FolderBackup.Client"
         mc:Ignorable="d"
-        Title="WelcomeWindows" Height="266" Width="353" ResizeMode="NoResize">
+        Title="WelcomeWindows" Height="266" Width="353" ResizeMode="NoResize" Closing="Window_Closing">
     <Grid x:Name="text">
         <Button x:Name="button" Content="" VerticalAlignment="Top" Margin="0,127,20,0" Height="23" Click="folderButton_Click" BorderBrush="White" HorizontalAlignment="Right" Width="22" RenderTransformOrigin="3.909,0.348">
             <Button.Background>
-                <ImageBrush ImageSource="folder.png"/>
+                <ImageBrush ImageSource="Icons/folder.png"/>
             </Button.Background>
         </Button>
         <Label x:Name="title" Height="49" Content="Welcome!" VerticalAlignment="Top" FontSize="36" FontFamily="Calibri" Margin="27,20,17,0"/>
