@@ -65,7 +65,6 @@ namespace FolderBackup.Client
                 }
                 catch (DirectoryNotFoundException e)
                 {
-                    Console.WriteLine(e.Message + "\n Cannot open file.");
                     Directory.CreateDirectory(basePath);
                     return Instance();
                 }
@@ -77,6 +76,7 @@ namespace FolderBackup.Client
                 }
                 BinaryFormatter deserializer = new BinaryFormatter();
                 instance = (Config)deserializer.Deserialize(br);
+                br.Close();
             }
             return instance;
         }
