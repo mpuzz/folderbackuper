@@ -58,20 +58,31 @@ namespace FolderBackup.Client
                 return;
             }
             string token;
-            BackupServiceClient server = logIn(username, password, out token);
-            if (server == null) return;//mostra qlc di errore
-            UsefullMethods.setLabelAlert("success", this.errorBox, "Log in succeed!");
-            conf.userName.set(this.usernameTxtBox.Text);
-            Thread.Sleep(500);
-            this.Hide();
-            string targetPath = conf.targetPath.get();
-            // if the path is not setted a windows for selecting the path must be shown
-            if (targetPath == null)
+            BackupServiceClient server = null;
+            try
             {
-                WelcomeWindows ww = new WelcomeWindows();
-                ww.parent = this;
-                ww.Show();
-                ww.Activate();
+                server = logIn(username, password, out token);
+            }
+            catch (LoginExcpetion ex)
+            {
+                UsefullMethods.setLabelAlert("danger", this.errorBox, ex.Message);
+
+            }
+            if (server != null)
+            {
+                UsefullMethods.setLabelAlert("success", this.errorBox, "Log in succeed!");
+                conf.userName.set(this.usernameTxtBox.Text);
+                Thread.Sleep(500);
+                this.Hide();
+                string targetPath = conf.targetPath.get();
+                // if the path is not setted a windows for selecting the path must be shown
+                if (targetPath == null)
+                {
+                    WelcomeWindows ww = new WelcomeWindows();
+                    ww.parent = this;
+                    ww.Show();
+                    ww.Activate();
+                }
             }
         }
 
@@ -96,24 +107,23 @@ namespace FolderBackup.Client
             this.Hide();
         }
 
-        private BackupServiceClient logIn(string username, string password, out string token)
+        public static BackupServiceClient logIn(string username, string password, out string token)
         {
             BackupServiceClient server = new BackupServiceClient();
             AuthenticationData ad;
+            token = null;
+
             try
             {
                 ad = server.authStep1(username);
             }
             catch(FaultException)
             {
-                UsefullMethods.setLabelAlert("danger", this.errorBox, "Username doesn't exist!");
-                token = null;
-                return null;
+                throw new LoginExcpetion("Username doesn't exist!");
+                
             }catch
             {
-                UsefullMethods.setLabelAlert("danger", this.errorBox, "No internet connection! Check it and retry");
-                token = null;
-                return null;
+                throw new LoginExcpetion("No internet connection!Check it and retry");
             }
 
             try
@@ -122,17 +132,21 @@ namespace FolderBackup.Client
             }
             catch (FaultException)
             {
-                UsefullMethods.setLabelAlert("danger", this.errorBox, "Wrong password!");
-                token = null;
-                return null;
+                throw new LoginExcpetion("Wrong password!");
             }
             catch
             {
-                UsefullMethods.setLabelAlert("danger", this.errorBox, "No internet connection! Check it and retry");
-                token = null;
-                return null;
+                throw new LoginExcpetion("No internet connection!Check it and retry");
             }
             return server;
         }
+    }
+}
+
+public class LoginExcpetion : Exception
+{
+        public LoginExcpetion(string message)
+        : base(message)
+    {
     }
 }
