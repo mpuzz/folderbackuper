@@ -67,6 +67,7 @@
     <Compile Include="ApplicationView.xaml.cs">
       <DependentUpon>ApplicationView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FileClient.cs" />
     <Compile Include="TrayiconMode.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="RegisterWindow.xaml.cs">

@@ -32,10 +32,6 @@ namespace FolderBackup.Client
             this.pathTxtBox.Text = PathBoxPlaceholder;
         }
         
-        public void focusButtonHandler(object sender, EventArgs e) {
-            Color c = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
-            this.Background = new SolidColorBrush(c);
-        }
         public void gotFocusHandler(object sender, EventArgs e)
         {
             if (this.PathBoxPlaceholder == this.pathTxtBox.Text)
