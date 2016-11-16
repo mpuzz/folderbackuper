@@ -19,7 +19,7 @@ namespace ClientTest
         [TestMethod]
         public void SyncFolder()
         {
-            SyncEngine sync = new SyncEngine(server);
+            SyncEngine sync = new SyncEngine();
             sync.sync();
         }
     }

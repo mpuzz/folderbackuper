@@ -17,16 +17,16 @@ namespace FolderBackup.Client
     /// <summary>
     /// Interaction logic for ApplicationView.xaml
     /// </summary>
-    public partial class ApplicationView : Window
+    public partial class ControlView : Window
     {
         private BackupServiceClient server;
         Config conf = Config.Instance();
         private String targetPath;
 
         public Window parent { get; set; }
-        public ApplicationView(BackupServiceClient server)
+        public ControlView()
         {
-            this.server = server;   
+            this.server = Const<BackupServiceClient>.Instance().get();   
             InitializeComponent();
             targetPath = conf.targetPath.get();
             // if the path is not setted a windows for selecting the path must be shown

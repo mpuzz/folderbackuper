@@ -1,0 +1,26 @@
+﻿<Window x:Class="FolderBackup.Client.ControlView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FolderBackup.Client"
+        mc:Ignorable="d"
+        Title="ControlView" Height="467" Width="919">
+    <Grid>
+
+        <TabControl x:Name="tabControl" Margin="0,0,6,-4">
+            <TabItem Header="Verisons">
+                <Grid Background="#FFFFFF">
+                    <TreeView x:Name="treeView" Margin="167,20,20,20"/>
+                    <ListBox x:Name="listBox" Margin="20,20,742,20"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Settings">
+                <Grid Background="#FFFFFFFF">
+
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+    </Grid>
+</Window>
