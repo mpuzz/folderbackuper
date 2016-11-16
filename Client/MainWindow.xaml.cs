@@ -70,6 +70,8 @@ namespace FolderBackup.Client
             }
             if (server != null)
             {
+
+                Const<BackupServiceClient>.Instance().set(server);
                 UsefullMethods.setLabelAlert("success", this.errorBox, "Log in succeed!");
                 conf.userName.set(this.usernameTxtBox.Text);
                 Thread.Sleep(500);
@@ -83,7 +85,7 @@ namespace FolderBackup.Client
                     ww.Show();
                     ww.Activate();
                 }
-                new TrayiconMode();
+                TrayiconMode.Instance();
             }
         }
 

@@ -55,20 +55,17 @@ namespace FolderBackup.Client
         {
             if (instance == null)
             {
-
-
                 Stream br;
                 try
                 {
                     br = File.OpenRead(fileName);
-
                 }
-                catch (DirectoryNotFoundException e)
+                catch (DirectoryNotFoundException)
                 {
                     Directory.CreateDirectory(basePath);
                     return Instance();
                 }
-                catch (FileNotFoundException e)
+                catch (FileNotFoundException)
                 {
                     instance = new Config();
                     instance.Serialize();

@@ -65,9 +65,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ApplicationView.xaml.cs">
-      <DependentUpon>ApplicationView.xaml</DependentUpon>
+    <Compile Include="ControlView.xaml.cs">
+      <DependentUpon>ControlView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Const.cs" />
     <Compile Include="FileClient.cs" />
     <Compile Include="TrayiconMode.cs">
       <SubType>Form</SubType>
@@ -81,7 +82,7 @@
     <Compile Include="WelcomeWindow.xaml.cs">
       <DependentUpon>WelcomeWindow.xaml</DependentUpon>
     </Compile>
-    <Page Include="ApplicationView.xaml">
+    <Page Include="ControlView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

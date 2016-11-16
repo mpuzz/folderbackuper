@@ -12,39 +12,46 @@ namespace FolderBackup.Client
     public class TrayiconMode : System.Windows.Forms.Form
     {
 
-
+        static private TrayiconMode instance;
         private System.Windows.Forms.NotifyIcon trayicon;
-        private System.Windows.Forms.ContextMenu exitContent;
+        private System.Windows.Forms.ContextMenu Content;
         private System.Windows.Forms.MenuItem exitItem;
-
+        private System.Windows.Forms.MenuItem syncItem;
         private System.Windows.Forms.MenuItem cpItem;
         private System.Windows.Forms.MenuItem messageItem;
 
         private System.ComponentModel.IContainer components;
 
-        public TrayiconMode()
+        private TrayiconMode()
         {
             this.components = new System.ComponentModel.Container();
-            this.exitContent = new System.Windows.Forms.ContextMenu();
+            this.Content = new System.Windows.Forms.ContextMenu();
             this.exitItem = new System.Windows.Forms.MenuItem();
             this.cpItem = new System.Windows.Forms.MenuItem();
+            this.syncItem = new System.Windows.Forms.MenuItem();
             this.messageItem = new System.Windows.Forms.MenuItem();
 
             // Initialize contextMenu1
-            this.exitContent.MenuItems.AddRange( new System.Windows.Forms.MenuItem[] { this.exitItem });
-            this.exitContent.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.cpItem });
-            this.exitContent.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.messageItem });
+            this.Content.MenuItems.AddRange( new System.Windows.Forms.MenuItem[] { this.exitItem });
+            this.Content.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.cpItem });
+            this.Content.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.syncItem });
+            this.Content.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.messageItem });
 
             // Initialize menuItem1
-            this.exitItem.Index = 2;
+            this.exitItem.Index = 3;
             this.exitItem.Text = "E&xit";
             this.exitItem.Click += new System.EventHandler(this.exit_Click);
 
 
-            this.cpItem.Index = 1;
+            this.cpItem.Index = 2;
             this.cpItem.Text = "Control Panel";
             this.cpItem.Click += new System.EventHandler(this.controlPanel_Click);
-            
+
+
+            this.syncItem.Index = 1;
+            this.syncItem.Text = "Start Sync";
+            this.syncItem.Click += new System.EventHandler(this.startSync_Click);
+
             this.messageItem.Index = 0;
             this.messageItem.Text = "";
 
@@ -61,7 +68,7 @@ namespace FolderBackup.Client
 
             // The ContextMenu property sets the menu that will
             // appear when the systray icon is right clicked.
-            trayicon.ContextMenu = this.exitContent;
+            trayicon.ContextMenu = this.Content;
 
             // The Text property sets the text that will be displayed,
             // in a tooltip, when the mouse hovers over the systray icon.
@@ -73,6 +80,14 @@ namespace FolderBackup.Client
 
         }
 
+        public static TrayiconMode Instance()
+        {
+            if (instance == null)
+            {
+                instance = new TrayiconMode();
+            }
+            return instance;
+        }
         protected override void Dispose(bool disposing)
         {
             // Clean up any components being used.
@@ -105,9 +120,14 @@ namespace FolderBackup.Client
         private void controlPanel_Click(object Sender, EventArgs e)
         {
             // Close the form, which closes the application.
-        //    ApplicationView av = new ApplicationView(server);
-          //  av.Show();
-           // av.Activate();
+            ControlView av = new ControlView();
+            av.Show();
+            av.Activate();
+        }
+        private void startSync_Click(object Sender, EventArgs e)
+        {
+            SyncEngine se = new SyncEngine();
+            se.sync();
         }
     }
 }

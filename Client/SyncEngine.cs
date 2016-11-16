@@ -8,6 +8,7 @@ using FolderBackup.CommunicationProtocol;
 using System.IO;
 using System.Net.Sockets;
 using System.Net.Security;
+using FolderBackup.Client;
 
 namespace FolderBackup.Client
 {
@@ -18,9 +19,9 @@ namespace FolderBackup.Client
         FBVersion cv;
         BackupServiceClient server;
 
-        public SyncEngine(BackupServiceClient server)
+        public SyncEngine()
         {
-            this.server = server;
+            this.server = Const<BackupServiceClient>.Instance().get();
             String dirPath = conf.targetPath.get();
             if (dirPath == null || !Directory.Exists(dirPath))
             {
@@ -53,7 +54,6 @@ namespace FolderBackup.Client
                         sf.encodedFile = f.serialize();
                         UploadData cedential = server.uploadFile(sf);
                         SendFile(cedential, new FileStream(cf.FullName, FileMode.Open));
-
                     }
                 }
                 catch {
