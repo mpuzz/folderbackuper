@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Net.Security;
+using System.IO;
+using System.Reflection;
 
 namespace FolderBackup.Shared
 {
@@ -43,6 +45,7 @@ namespace FolderBackup.Shared
               X509Chain chain,
               SslPolicyErrors sslPolicyErrors)
         {
+            FileInfo f = new FileInfo("Certificates\\certificate.pfx");
             X509Certificate cert = new X509Certificate("Certificates\\certificate.pfx","malnati");
             if (cert.Equals(cert))
                 return true;

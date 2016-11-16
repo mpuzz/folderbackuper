@@ -83,6 +83,7 @@ namespace FolderBackup.Client
                     ww.Show();
                     ww.Activate();
                 }
+                new TrayiconMode();
             }
         }
 

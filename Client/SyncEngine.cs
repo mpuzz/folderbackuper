@@ -26,7 +26,7 @@ namespace FolderBackup.Client
             {
                 throw new DirectoryNotFoundException("Directory in configuration is not valid");
             }
-            Directory.SetCurrentDirectory(dirPath);
+            //Directory.SetCurrentDirectory(dirPath);
             vb = new FBVersionBuilder(dirPath);
             cv = (FBVersion)vb.generate();
 
@@ -44,13 +44,20 @@ namespace FolderBackup.Client
                 {
                     fileToSync.Add(FBFile.deserialize(bf));
                 }
-                foreach (FBFile f in fileToSync)
+                try
                 {
-                    FBFileClient cf = FBFileClient.generate(f);
-                    SerializedFile sf = new SerializedFile();
-                    sf.encodedFile = f.serialize();
-                    UploadData cedential = server.uploadFile(sf);
-                    SendFile(cedential, new FileStream(cf.FullName,FileMode.Open));
+                    foreach (FBFile f in fileToSync)
+                    {
+                        FBFileClient cf = FBFileClient.generate(f);
+                        SerializedFile sf = new SerializedFile();
+                        sf.encodedFile = f.serialize();
+                        UploadData cedential = server.uploadFile(sf);
+                        SendFile(cedential, new FileStream(cf.FullName, FileMode.Open));
+
+                    }
+                }
+                catch {
+                    server.rollback();
                 }
                 server.commit();
             }
@@ -64,15 +71,13 @@ namespace FolderBackup.Client
                 client.GetStream(), false,
                 new RemoteCertificateValidationCallback(AuthenticationPrimitives.ValidateServerCertificate),
                 null, EncryptionPolicy.RequireEncryption);
-            try
-            {
-                ssl.AuthenticateAsClient("127.0.0.1", null, System.Security.Authentication.SslProtocols.Tls12, false);
-                ssl.Write(UsefullMethods.GetBytesFromString(credential.token));
-                fstream.CopyTo(ssl);
-                ssl.Close();
-                fstream.Close();
-            }
-            catch { }
+            
+            ssl.AuthenticateAsClient("127.0.0.1", null, System.Security.Authentication.SslProtocols.Tls12, false);
+            ssl.Write(UsefullMethods.GetBytesFromString(credential.token));
+            fstream.CopyTo(ssl);
+            ssl.Close();
+            fstream.Close();
+            
         }
 
 

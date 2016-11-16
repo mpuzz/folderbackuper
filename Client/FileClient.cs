@@ -17,18 +17,18 @@ namespace FolderBackup.Client
 
         public static FBFileClient generate(FBFile file)
         {
-            String basePath = Directory.GetCurrentDirectory();
-            FileInfo f = whoami(file, new DirectoryInfo(basePath));
+            Config conf = Config.Instance();
+            FileInfo f = whoami(file, new DirectoryInfo(conf.targetPath.get()));
 
-            return new FBFileClient(f.FullName);
+            return new FBFileClient(f);
         }
         
 
-        private FBFileClient(string name):base(name)
+        private FBFileClient(FileInfo finf) :base("")
         {
-            FullName = name;
-            FileInfo finf = new FileInfo(name);
+            FullName = finf.FullName;
             FBFile file = new FBFile(finf.Name);
+            this.Name = finf.Name;
             this.dimension = finf.Length;
 
             FileStream fileStream = finf.Open(FileMode.Open);
