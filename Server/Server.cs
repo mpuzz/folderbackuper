@@ -236,9 +236,9 @@ namespace FolderBackup.Server
             if (this.transactionEnabled)
                 throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.TRANSACTIONALREADYENABLED));
 
-
             FBVersion vers = FBVersion.deserialize(newVersion.encodedVersion);
-            if (vers.Equals(this.getCurrentVersion()))
+            FBVersion current = FBVersion.deserialize(this.getCurrentVersion().encodedVersion);
+            if (vers.Equals(current))
             {
                 return false;
             }

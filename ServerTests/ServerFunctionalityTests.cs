@@ -79,6 +79,17 @@ namespace FolderBackup.ServerTests
             Assert.IsTrue(server.commit());
         }
 
+        [TestMethod]
+        public void DetectEqualVersionTest()
+        {
+            this.TransactionCommitTest();
+            FBVersionBuilder vb = new FBVersionBuilder(rinfo.FullName);
+            FolderBackup.Shared.FBVersion v = (FolderBackup.Shared.FBVersion)vb.generate();
+
+            SerializedVersion serV = new SerializedVersion(v.serialize());
+
+            Assert.IsFalse(server.newTransaction(serV));
+        }
         
         private void SendFile(UploadData credential, FileStream fstream)
         {
@@ -114,7 +125,7 @@ namespace FolderBackup.ServerTests
 
             SerializedVersion serV = new SerializedVersion(v.serialize());
 
-            Assert.IsTrue(server.newTransaction(serV));
+            Assert.IsFalse(server.newTransaction(serV));
         }
 
         [TestMethod]
