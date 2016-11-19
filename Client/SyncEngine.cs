@@ -10,6 +10,7 @@ using System.Net.Sockets;
 using System.Net.Security;
 using FolderBackup.Client;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace FolderBackup.Client
 {
@@ -20,12 +21,38 @@ namespace FolderBackup.Client
         FBVersion cv;
         BackupServiceClient server;
 
-        //Dictionary<String,Thread> workingThread= new Dictionary<String,Thread>();
+        Dictionary<String,Thread> workingThread= new Dictionary<String,Thread>();
         bool stopSync = false;
-        String status = "Idle";
+        private static SyncEngine instance;
 
-        public SyncEngine()
+        //Del statusUpdateQueue = new List<Delegate>();
+        public delegate void StatusUpdate(String newstatus);
+        public StatusUpdate statusUpdate ;
+        String status {
+            get
+            {
+                return status;
+            }
+            set
+            {
+               
+                statusUpdate.Invoke(value);
+            }
+
+        }
+        public static SyncEngine Instance()
         {
+            if (instance == null)
+            {
+                instance = new SyncEngine();
+            }
+            return instance;
+        }
+
+        private SyncEngine()
+        {
+            //statusUpdate =  new StatusUpdate();
+            status = "Idle";
             this.server = Const<BackupServiceClient>.Instance().get();
             String dirPath = conf.targetPath.get();
             if (dirPath == null || !Directory.Exists(dirPath))
@@ -38,6 +65,10 @@ namespace FolderBackup.Client
 
         }
 
+        public void WaitSync()
+        {
+            workingThread["sync"].Join();
+        }
 
         public void StartSync()
         {
@@ -45,12 +76,13 @@ namespace FolderBackup.Client
             Thread t = new Thread(ts);
             this.stopSync = false;
             t.Start();
-            //workingThread["sync"] = t;
+            workingThread["sync"] = t;
         }
 
         public void StopSync()
         {
             this.stopSync = true;
+            workingThread["sync"].Join();
         }
         private void sync()
         {

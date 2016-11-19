@@ -50,6 +50,7 @@ namespace FolderBackup.Client
 
             this.syncItem.Index = 1;
             this.syncItem.Text = "Start Sync";
+            this.syncItem.Name = "StartSync";
             this.syncItem.Click += new System.EventHandler(this.startSync_Click);
 
             this.messageItem.Index = 0;
@@ -126,10 +127,20 @@ namespace FolderBackup.Client
         }
         private void startSync_Click(object Sender, EventArgs e)
         {
-            if (((Button)Sender).Name == "")
+
+            SyncEngine se = SyncEngine.Instance();
+            if (((Button)Sender).Name == "StartSync")
             {
-                SyncEngine se = new SyncEngine();
+                ((Button)Sender).Name = "StopSync";
+                ((Button)Sender).Text = "Stop Sync";
                 se.StartSync();
+            }
+            else
+            {
+                se.StopSync();
+                ((Button)Sender).Name = "StartSync";
+                ((Button)Sender).Text = "Start Sync";
+                
             }
         }
     }
