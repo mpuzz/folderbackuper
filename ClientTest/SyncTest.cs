@@ -17,8 +17,9 @@ namespace ClientTest
         [TestInitialize]
         public void TestInitialize()
         {
+            CleanUp();
             String token;
-            String username = "testUser1";
+            String username = "testUser";
             String password = "ciao";
             server = new BackupServiceClient();
             string salt = server.registerStep1(username);
@@ -68,7 +69,9 @@ namespace ClientTest
 
         private void CleanUp()
         {
-            Directory.Delete(@"C:\folderBackup\testUser");
+            if (Directory.Exists(@"C:\folderBackup\testUser")) {
+                Directory.Delete(@"C:\folderBackup\testUser");
+            }
         }
     }
 }

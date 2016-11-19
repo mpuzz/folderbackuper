@@ -27,12 +27,15 @@ namespace FolderBackup.Client
         Config conf = Config.Instance();
         private String targetPath;
         FBVersion[] versions;
+        SyncEngine se = SyncEngine.Instance();
 
         public Window parent { get; set; }
         public ControlView()
         {
             this.server = Const<BackupServiceClient>.Instance().get();   
             InitializeComponent();
+
+            se.statusUpdate += new SyncEngine.StatusUpdate(UpdateStatus);
             targetPath = conf.targetPath.get();
             SerializedVersion[] sversions = server.getOldVersions();
             this.versions = new FBVersion[sversions.Length];
@@ -40,7 +43,7 @@ namespace FolderBackup.Client
             foreach (SerializedVersion v in sversions ) {
                 versions[i] = FBVersion.deserialize(v.encodedVersion);
                 System.Windows.Controls.Button button = new System.Windows.Controls.Button();
-                button.Name = versions[i].timestamp.ToString("MMM_dd_yyyy__HH_MM_ss");
+                button.Name = versions[i].timestamp.ToString("MMM_dd_yyyy_HH_MM_ss");
                 button.Content = versions[i].timestamp.ToString("MMM, dd yyyy HH:MM");
                 button.Click+=versionClick;
                 button.MinWidth = 200;
@@ -50,8 +53,9 @@ namespace FolderBackup.Client
                 versionBox.Items.Add(button);
                 i++;
             }
-        
-            versionView.Items.Add(CreateDirectoryNode(versions[versions.Length-1].root));
+            if (versions.Length>0) {
+                versionView.Items.Add(CreateDirectoryNode(versions[versions.Length - 1].root));
+            }
             // if the path is not setted a windows for selecting the path must be shown
             if (targetPath == null)
             {
@@ -82,6 +86,15 @@ namespace FolderBackup.Client
 
 
         }
+
+        private void UpdateStatus(string status)
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                this.errorBox.Content = status;
+            });
+        }
+
         private static TreeViewItem CreateDirectoryNode(FBDirectory root)
         {            
             TreeViewItem treeItem = new TreeViewItem();

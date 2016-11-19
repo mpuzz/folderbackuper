@@ -11,7 +11,7 @@ namespace FolderBackup.Client
 
     public class TrayiconMode : System.Windows.Forms.Form
     {
-
+        SyncEngine se = SyncEngine.Instance();
         static private TrayiconMode instance;
         private System.Windows.Forms.NotifyIcon trayicon;
         private System.Windows.Forms.ContextMenu Content;
@@ -55,6 +55,8 @@ namespace FolderBackup.Client
 
             this.messageItem.Index = 0;
             this.messageItem.Text = "";
+            se.statusUpdate = new SyncEngine.StatusUpdate(UpdateStatus);
+            
 
             // Set up how the form should be displayed.
             this.ClientSize = new System.Drawing.Size(292, 266);
@@ -125,21 +127,23 @@ namespace FolderBackup.Client
             av.Show();
             av.Activate();
         }
+        private void UpdateStatus(string status){
+            this.messageItem.Text = status;
+        }
         private void startSync_Click(object Sender, EventArgs e)
         {
 
-            SyncEngine se = SyncEngine.Instance();
-            if (((Button)Sender).Name == "StartSync")
+            if (((MenuItem)Sender).Name == "StartSync")
             {
-                ((Button)Sender).Name = "StopSync";
-                ((Button)Sender).Text = "Stop Sync";
+                ((MenuItem)Sender).Name = "StopSync";
+                ((MenuItem)Sender).Text = "Stop Sync";
                 se.StartSync();
             }
             else
             {
                 se.StopSync();
-                ((Button)Sender).Name = "StartSync";
-                ((Button)Sender).Text = "Start Sync";
+                ((MenuItem)Sender).Name = "StartSync";
+                ((MenuItem)Sender).Text = "Start Sync";
                 
             }
         }

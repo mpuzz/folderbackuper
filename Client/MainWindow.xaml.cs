@@ -85,7 +85,10 @@ namespace FolderBackup.Client
                     ww.Show();
                     ww.Activate();
                 }
-                TrayiconMode.Instance();
+                else
+                {
+                    TrayiconMode.Instance();
+                }
             }
         }
 

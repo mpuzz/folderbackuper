@@ -8,9 +8,10 @@
         Title="WelcomeWindows" Height="266" Width="353" ResizeMode="NoResize" Closing="Window_Closing">
     <Grid x:Name="text">
         <Button x:Name="button" Content="" VerticalAlignment="Top" Margin="0,127,20,0" Height="23" Click="folderButton_Click" BorderBrush="White" HorizontalAlignment="Right" Width="22" RenderTransformOrigin="3.909,0.348">
-            <Button.Background>
-                <ImageBrush ImageSource="Icons/folder.png"/>
-            </Button.Background>
+            <Button.OpacityMask>
+                <ImageBrush ImageSource="pack://siteoforigin:,,,/Icons/folder.png"/>
+            </Button.OpacityMask>
+
         </Button>
         <Label x:Name="title" Height="49" Content="Welcome!" VerticalAlignment="Top" FontSize="36" FontFamily="Calibri" Margin="27,20,17,0"/>
         <Label x:Name="explanation" Height="35" Content="Please select the folder that you want to sync." VerticalAlignment="Top" FontSize="14" FontFamily="Calibri" Margin="27,85,17,0"/>

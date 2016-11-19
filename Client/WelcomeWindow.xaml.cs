@@ -75,6 +75,7 @@ namespace FolderBackup.Client
             if (Directory.Exists(this.pathTxtBox.Text))
             {
                 conf.targetPath.set(this.pathTxtBox.Text);
+                TrayiconMode.Instance();
                 this.Hide();
             }
         }

@@ -35,8 +35,9 @@ namespace FolderBackup.Client
             }
             set
             {
-               
-                statusUpdate.Invoke(value);
+                if (statusUpdate != null) {
+                    statusUpdate.Invoke(value);
+                }
             }
 
         }
@@ -51,14 +52,11 @@ namespace FolderBackup.Client
 
         private SyncEngine()
         {
-            //statusUpdate =  new StatusUpdate();
+
             status = "Idle";
             this.server = Const<BackupServiceClient>.Instance().get();
             String dirPath = conf.targetPath.get();
-            if (dirPath == null || !Directory.Exists(dirPath))
-            {
-                throw new DirectoryNotFoundException("Directory in configuration is not valid");
-            }
+
             //Directory.SetCurrentDirectory(dirPath);
             vb = new FBVersionBuilder(dirPath);
             cv = (FBVersion)vb.generate();
@@ -86,6 +84,12 @@ namespace FolderBackup.Client
         }
         private void sync()
         {
+            String dirPath = conf.targetPath.get();
+
+            if (dirPath == null || !Directory.Exists(dirPath))
+            {
+                throw new DirectoryNotFoundException("Directory in configuration is not valid");
+            }
             SerializedVersion serV = new SerializedVersion();
             serV.encodedVersion = cv.serialize();
             if (server.newTransaction(serV))

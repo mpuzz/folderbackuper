@@ -46,7 +46,16 @@ namespace FolderBackup.Client
             }
 
             BackupServiceClient server = new BackupServiceClient();
-            string salt = server.registerStep1(username);
+            string salt;
+            try
+            {
+                salt = server.registerStep1(username);
+            }
+            catch
+            {
+                UsefullMethods.setLabelAlert("danger", this.errorBox, "No internet connection!Check it and retry");
+                return;
+            }
             if (salt == null)
             {
                 UsefullMethods.setLabelAlert("danger", this.errorBox, "Username already choosen! Try another!");
