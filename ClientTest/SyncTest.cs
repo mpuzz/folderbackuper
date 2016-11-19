@@ -14,13 +14,21 @@ namespace ClientTest
         {
             String token;
             server = MainWindow.logIn("asd","123",out token);
+            Const<BackupServiceClient>.Instance().set(server);
             Config.Instance().targetPath.set("C:\\Users\\Andrea\\sincronizzami");
         }
         [TestMethod]
         public void SyncFolder()
         {
             SyncEngine sync = new SyncEngine();
-            sync.sync();
+            sync.StartSync();
+        }
+        [TestMethod]
+        public void ControlViewTest()
+        {
+            ControlView cv = new ControlView();
+            cv.Show();
+            cv.Activate();
         }
     }
 }

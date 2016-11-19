@@ -126,8 +126,11 @@ namespace FolderBackup.Client
         }
         private void startSync_Click(object Sender, EventArgs e)
         {
-            SyncEngine se = new SyncEngine();
-            se.sync();
+            if (((Button)Sender).Name == "")
+            {
+                SyncEngine se = new SyncEngine();
+                se.StartSync();
+            }
         }
     }
 }

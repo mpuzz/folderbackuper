@@ -9,6 +9,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Net.Security;
 using FolderBackup.Client;
+using System.Threading;
 
 namespace FolderBackup.Client
 {
@@ -18,6 +19,10 @@ namespace FolderBackup.Client
         FBVersionBuilder vb = null;
         FBVersion cv;
         BackupServiceClient server;
+
+        //Dictionary<String,Thread> workingThread= new Dictionary<String,Thread>();
+        bool stopSync = false;
+        String status = "Idle";
 
         public SyncEngine()
         {
@@ -33,12 +38,27 @@ namespace FolderBackup.Client
 
         }
 
-        public void sync()
+
+        public void StartSync()
+        {
+            ThreadStart ts = new ThreadStart(this.sync);
+            Thread t = new Thread(ts);
+            this.stopSync = false;
+            t.Start();
+            //workingThread["sync"] = t;
+        }
+
+        public void StopSync()
+        {
+            this.stopSync = true;
+        }
+        private void sync()
         {
             SerializedVersion serV = new SerializedVersion();
             serV.encodedVersion = cv.serialize();
             if (server.newTransaction(serV))
             {
+                this.status = "Syncing";
                 byte[][] bfiles = server.getFilesToUpload();
                 List<FBFile> fileToSync = new List<FBFile>();
                 foreach (byte[] bf in bfiles)
@@ -49,17 +69,29 @@ namespace FolderBackup.Client
                 {
                     foreach (FBFile f in fileToSync)
                     {
-                        FBFileClient cf = FBFileClient.generate(f);
-                        SerializedFile sf = new SerializedFile();
-                        sf.encodedFile = f.serialize();
-                        UploadData cedential = server.uploadFile(sf);
-                        SendFile(cedential, new FileStream(cf.FullName, FileMode.Open));
+                        if (!this.stopSync)
+                        {
+                            FBFileClient cf = FBFileClient.generate(f);
+                            SerializedFile sf = new SerializedFile();
+                            sf.encodedFile = f.serialize();
+                            UploadData cedential = server.uploadFile(sf);
+                            SendFile(cedential, new FileStream(cf.FullName, FileMode.Open));
+                        }else
+                        {
+                            server.rollback();
+                            break;
+                        }
                     }
                 }
-                catch {
+                catch
+                {
                     server.rollback();
                 }
-                server.commit();
+                finally
+                {
+                    server.commit();
+                }
+                this.status = "Idle";
             }
         }
 

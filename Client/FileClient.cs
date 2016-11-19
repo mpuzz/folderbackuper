@@ -13,7 +13,7 @@ namespace FolderBackup.Client
 {
     class FBFileClient : FBFile
     {
-        public string FullName { get; }
+        public string FullName;
 
         public static FBFileClient generate(FBFile file)
         {

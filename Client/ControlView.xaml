@@ -8,11 +8,17 @@
         Title="ControlView" Height="467" Width="919">
     <Grid>
 
-        <TabControl x:Name="tabControl" Margin="0,0,6,-4">
+        <TabControl x:Name="tabControl" Margin="0,0,6,41">
             <TabItem Header="Verisons">
-                <Grid Background="#FFFFFF">
-                    <TreeView x:Name="treeView" Margin="167,20,20,20"/>
-                    <ListBox x:Name="listBox" Margin="20,20,742,20"/>
+                <Grid Background="#FFFFFF" Margin="0,0,0,2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="252*"/>
+                        <ColumnDefinition Width="647*"/>
+                    </Grid.ColumnDefinitions>
+                    <TreeView x:Name="versionView" Margin="10,20,20,20" Grid.Column="1">
+
+                    </TreeView>
+                    <ListBox x:Name="versionBox" Margin="20,20,10,20"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Settings">
@@ -21,6 +27,7 @@
                 </Grid>
             </TabItem>
         </TabControl>
+        <Label x:Name="errorBox" Content="" Background="White" FontSize="12" Foreground="#FFCC0000" FontFamily="Calibri" BorderThickness="1" Margin="0,400,6,5"/>
 
     </Grid>
 </Window>
