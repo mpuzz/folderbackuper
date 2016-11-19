@@ -332,7 +332,7 @@ namespace FolderBackup.Server
             UInt16 port = channel.port;
             this.channels.Add(channel);
 
-            return new UploadData(port, token);
+            return new UploadData(UsefullMethods.GetLocalIPAddress(), port, token);
         }
 
         public byte[][] getFilesToUpload()
@@ -470,7 +470,7 @@ namespace FolderBackup.Server
                 this.ManageCompleteUpload, this.ManageFailedUpload, FilesStream);
             UInt16 port = sr.port;
 
-            return new UploadData(port, token);
+            return new UploadData(UsefullMethods.GetLocalIPAddress(), port, token);
         }
 
         ~Server()

@@ -108,14 +108,14 @@ namespace FolderBackup.ServerTests
         private void SendFile(UploadData credential, FileStream fstream)
         {
             System.Threading.Thread.Sleep(100);
-            TcpClient client = new TcpClient("127.0.0.1", credential.port);
+            TcpClient client = new TcpClient(credential.ip, credential.port);
             SslStream ssl = new SslStream(
                 client.GetStream(), false,
                 new RemoteCertificateValidationCallback(AuthenticationPrimitives.ValidateServerCertificate),
                 null, EncryptionPolicy.RequireEncryption);
             try
             {
-                ssl.AuthenticateAsClient("127.0.0.1", null, System.Security.Authentication.SslProtocols.Tls12, false);
+                ssl.AuthenticateAsClient(credential.ip, null, System.Security.Authentication.SslProtocols.Tls12, false);
                 ssl.Write(UsefullMethods.GetBytesFromString(credential.token));
                 fstream.CopyTo(ssl);
                 ssl.Close();
