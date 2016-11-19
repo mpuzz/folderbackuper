@@ -380,10 +380,14 @@ namespace FolderBackup.Server
         public SerializedVersion[] getOldVersions()
         {
             LinkedList<FBVersion> versions = this.OldVersions();
-            SerializedVersion[] svers = new SerializedVersion[versions.Count];
+            SerializedVersion[] svers = new SerializedVersion[versions.Count - 1];
             int i = 0;
             foreach (FBVersion ver in versions)
             {
+                if (ver.root.Name.Contains("1970_01_01__00_00_00")
+                    && ver.fileList.Count == 0)
+                    continue;
+
                 svers[i++] = new SerializedVersion(ver.serialize());
             }
 

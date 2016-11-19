@@ -80,6 +80,20 @@ namespace FolderBackup.ServerTests
         }
 
         [TestMethod]
+        public void GetOldVersionsTest()
+        {
+            this.TransactionCommitTest();
+
+            SerializedVersion[] serVers = server.getOldVersions();
+            Assert.IsTrue(serVers.Length == 1);
+            foreach(SerializedVersion serVer in serVers)
+            {
+                FBVersion ver = FBVersion.deserialize(serVer.encodedVersion);
+                Assert.IsFalse(ver.root.Name.Contains("1970"));
+            }
+        }
+
+        [TestMethod]
         public void DetectEqualVersionTest()
         {
             this.TransactionCommitTest();
