@@ -468,5 +468,11 @@ namespace FolderBackup.Server
 
             return new UploadData(port, token);
         }
+
+        ~Server()
+        {
+            if (transactionEnabled)
+                this.rollback();
+        }
     }
 }
