@@ -9,53 +9,53 @@ using System.IO;
 namespace FolderBackup.CommunicationProtocol
 {
     // NOTA: è possibile utilizzare il comando "Rinomina" del menu "Refactoring" per modificare il nome di interfaccia "IBackupService" nel codice e nel file di configurazione contemporaneamente.
-    [ServiceContract]
+    [ServiceContract(SessionMode = SessionMode.Required)]
     public interface IBackupService
     {
-        [OperationContract]
+        [OperationContract(IsInitiating = true)]
         [FaultContract(typeof(ServiceErrorMessage))]
         string registerStep1(string username);
-        [OperationContract]
+        [OperationContract(IsInitiating = false)]
         [FaultContract(typeof(ServiceErrorMessage))]
         bool registerStep2(string username, string password, string salt);
 
-        [OperationContract]
+        [OperationContract(IsInitiating = true)]
         [FaultContract(typeof(ServiceErrorMessage))]
         AuthenticationData authStep1(string username);
 
-        [OperationContract]
+        [OperationContract(IsInitiating = false)]
         [FaultContract(typeof(ServiceErrorMessage))]
         string authStep2(string token, string username, string password);
 
-        [OperationContract]
+        [OperationContract(IsInitiating = false)]
         [FaultContract(typeof(ServiceErrorMessage))]
         SerializedVersion getCurrentVersion();
 
-        [OperationContract]
+        [OperationContract(IsInitiating = false)]
         [FaultContract(typeof(ServiceErrorMessage))]
         Boolean newTransaction(SerializedVersion newVersion);
 
-        [OperationContract]
+        [OperationContract(IsInitiating = false)]
         [FaultContract(typeof(ServiceErrorMessage))]
         Boolean commit();
 
-        [OperationContract]
+        [OperationContract(IsInitiating = false)]
         [FaultContract(typeof(ServiceErrorMessage))]
         Boolean rollback();
 
-        [OperationContract]
+        [OperationContract(IsInitiating = false)]
         [FaultContract(typeof(ServiceErrorMessage))]
         UploadData uploadFile(SerializedFile file);
 
-        [OperationContract]
+        [OperationContract(IsInitiating = false)]
         [FaultContract(typeof(ServiceErrorMessage))]
         byte[][] getFilesToUpload();
 
-        [OperationContract]
+        [OperationContract(IsInitiating = false)]
         [FaultContract(typeof(ServiceErrorMessage))]
         UploadData resetToPreviousVersion(int versionAgo);
 
-        [OperationContract]
+        [OperationContract(IsInitiating = false)]
         [FaultContract(typeof(ServiceErrorMessage))]
         SerializedVersion[] getOldVersions();
 
@@ -123,12 +123,15 @@ namespace FolderBackup.CommunicationProtocol
     public class UploadData
     {
         [DataMember]
+        public String ip;
+        [DataMember]
         public UInt16 port;
         [DataMember]
         public string token;
 
-        public UploadData(UInt16 p, string t)
+        public UploadData(String ip, UInt16 p, string t)
         {
+            this.ip = ip;
             this.token = t;
             this.port = p;
         }
