@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Net.Security;
 
 namespace FolderBackup.Shared
 {
@@ -126,6 +127,50 @@ namespace FolderBackup.Shared
                 }
             }
             throw new Exception("Local IP Address Not Found!");
+        }
+
+
+        public static void SendFile(String ip, UInt16 port, String token, Stream fstream)
+        {
+            System.Threading.Thread.Sleep(100);
+            TcpClient client = new TcpClient(ip, port);
+            SslStream ssl = new SslStream(
+                client.GetStream(), false,
+                new RemoteCertificateValidationCallback(AuthenticationPrimitives.ValidateServerCertificate),
+                null, EncryptionPolicy.RequireEncryption);
+            try
+            {
+                ssl.AuthenticateAsClient(ip, null, System.Security.Authentication.SslProtocols.Tls12, false);
+                ssl.Write(UsefullMethods.GetBytesFromString(token));
+                fstream.CopyTo(ssl);
+                ssl.Close();
+                fstream.Close();
+            }
+            catch { }
+        }
+
+        public static void ReceiveFile(String ip, UInt16 port, String token, String path)
+        {
+            System.Threading.Thread.Sleep(100);
+            TcpClient client = new TcpClient(ip, port);
+            SslStream ssl = new SslStream(
+                client.GetStream(), false,
+                new RemoteCertificateValidationCallback(AuthenticationPrimitives.ValidateServerCertificate),
+                null, EncryptionPolicy.RequireEncryption);
+            FileStream fstream = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write);
+            try
+            {
+                ssl.AuthenticateAsClient(ip, null, System.Security.Authentication.SslProtocols.Tls12, false);
+                ssl.Write(UsefullMethods.GetBytesFromString(token));
+                ssl.Flush();
+                ssl.CopyTo(fstream);
+                ssl.Close();
+                fstream.Close();
+            }
+            catch(Exception e)
+            {
+                throw e;
+            }
         }
     }
 }
