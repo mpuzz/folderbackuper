@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows.Forms;
-using static FolderBackup.Client.SyncEngine;
 
 namespace FolderBackup.Client
 {
@@ -143,11 +142,11 @@ namespace FolderBackup.Client
                 se.StopSync();
             }
         }
-        void ThreadMonitor(TypeThread type, StatusCode sc, String status)
+        void ThreadMonitor(SyncEngine.TypeThread type, SyncEngine.StatusCode sc, String status)
         {
-            if (type == TypeThread.SYNC)
+            if (type == SyncEngine.TypeThread.SYNC)
             {
-                if (sc == StatusCode.WORKING)
+                if (sc == SyncEngine.StatusCode.WORKING)
                 {
                     this.syncItem.Name = "StopSync";
                     this.syncItem.Text = "Stop Sync";

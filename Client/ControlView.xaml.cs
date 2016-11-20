@@ -15,7 +15,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using static FolderBackup.Client.SyncEngine;
 
 namespace FolderBackup.Client
 {
@@ -29,7 +28,7 @@ namespace FolderBackup.Client
         private String targetPath;
         FBVersion[] versions;
         SyncEngine se = SyncEngine.Instance();
-        StatusUpdate su;
+        SyncEngine.StatusUpdate su;
         const string TIMESTAMP_FORMAT = "MMM_dd_yyyy_HH_MM_ss";
 
         List<System.Windows.Controls.Button> versionButtons = new List<System.Windows.Controls.Button> ();
@@ -42,7 +41,7 @@ namespace FolderBackup.Client
         {
             this.server = Const<BackupServiceClient>.Instance().get();   
             InitializeComponent();
-            su = new StatusUpdate(UpdateStatus);
+            su = new SyncEngine.StatusUpdate(UpdateStatus);
             se.statusUpdate += su;
             UpdateStatus(se.status);
             targetPath = conf.targetPath.get();
