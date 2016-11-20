@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace FolderBackup.Server
 {
-    class SecureReverter : SecureChannel
+    class SecureDownloader : SecureChannel
     {
         private Stream fileStream;
-        public SecureReverter(Server server, string token,
+        public SecureDownloader(Server server, string token,
             NotifyReceiveComplete completeEvent, NotifyErrorReceiving errorEvent,
             Stream fileStream) :
             base(server, token, completeEvent, errorEvent)
@@ -22,6 +22,23 @@ namespace FolderBackup.Server
 
         protected override void ServeRequest(Stream ssl)
         {
+            string token = "";
+            char[] chars = new char[20];
+
+            StreamReader sr = new StreamReader(ssl, Encoding.Default);
+            sr.Read(chars, 0, 20);
+            foreach (char c in chars)
+            {
+                token += c;
+            }
+
+            if (token != this.token)
+            {
+                if(this.errorEvent != null) this.errorEvent(this.token);
+
+                return;
+            }
+
             UsefullMethods.CopyStream(this.fileStream, ssl);
             ssl.Close();
             fileStream.Close();

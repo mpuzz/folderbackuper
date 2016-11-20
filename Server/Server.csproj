@@ -63,7 +63,7 @@
     <Compile Include="DatabaseManager.cs" />
     <Compile Include="PhysicFile.cs" />
     <Compile Include="SecureChannel.cs" />
-    <Compile Include="SecureReverter.cs" />
+    <Compile Include="SecureDownloader.cs" />
     <Compile Include="SecureUploader.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="Main.cs" />

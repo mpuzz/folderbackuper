@@ -63,7 +63,7 @@ namespace FolderBackup.ServerTests
             FileStream fstream = new FileStream(@"asd\uno.txt", FileMode.Open, FileAccess.Read);
 
             UploadData credential = server.uploadFile(new SerializedFile(file.serialize()));
-            this.SendFile(credential, fstream);
+            UsefullMethods.SendFile(credential.ip, credential.port, credential.token, fstream);
 
             //Assert.AreEqual(server.uploadFile(fstream), file.hash);
             //fstream.Close();
@@ -74,7 +74,7 @@ namespace FolderBackup.ServerTests
             fstream = new FileStream(@"asd\due.txt", FileMode.Open, FileAccess.Read);
 
             credential = server.uploadFile(new SerializedFile(file.serialize()));
-            this.SendFile(credential, fstream);
+            UsefullMethods.SendFile(credential.ip, credential.port, credential.token, fstream);
             System.Threading.Thread.Sleep(1000);
             Assert.IsTrue(server.commit());
         }
@@ -103,25 +103,6 @@ namespace FolderBackup.ServerTests
             SerializedVersion serV = new SerializedVersion(v.serialize());
 
             Assert.IsFalse(server.newTransaction(serV));
-        }
-        
-        private void SendFile(UploadData credential, FileStream fstream)
-        {
-            System.Threading.Thread.Sleep(100);
-            TcpClient client = new TcpClient(credential.ip, credential.port);
-            SslStream ssl = new SslStream(
-                client.GetStream(), false,
-                new RemoteCertificateValidationCallback(AuthenticationPrimitives.ValidateServerCertificate),
-                null, EncryptionPolicy.RequireEncryption);
-            try
-            {
-                ssl.AuthenticateAsClient(credential.ip, null, System.Security.Authentication.SslProtocols.Tls12, false);
-                ssl.Write(UsefullMethods.GetBytesFromString(credential.token));
-                fstream.CopyTo(ssl);
-                ssl.Close();
-                fstream.Close();
-            }
-            catch {  }
         }
 
         [TestMethod]
@@ -167,7 +148,7 @@ namespace FolderBackup.ServerTests
             //Assert.AreEqual(server.uploadFile(fstream), file.hash);
             //fstream.Close();
             UploadData credential = server.uploadFile(new SerializedFile(file.serialize()));
-            this.SendFile(credential, fstream);
+            UsefullMethods.SendFile(credential.ip, credential.port, credential.token, fstream);
 
             file = (FBFile)new FBFileBuilder(@"asd\due.txt").generate();
             string[] lines1 = {"First line", "Second line", "Third lines" };
@@ -176,7 +157,7 @@ namespace FolderBackup.ServerTests
             //Assert.AreEqual(server.uploadFile(fstream), file.hash);
             //fstream.Close();
             credential = server.uploadFile(new SerializedFile(file.serialize()));
-            this.SendFile(credential, fstream);
+            UsefullMethods.SendFile(credential.ip, credential.port, credential.token, fstream);
             
             Assert.IsTrue(server.rollback());
 
@@ -188,6 +169,22 @@ namespace FolderBackup.ServerTests
                 FBFile f = FBFile.deserialize(bf);
                 Assert.IsTrue(v.fileList.Contains(f));
             }
+        }
+
+        [TestMethod]
+        public void GetFileTest()
+        {
+            TransactionCommitTest();
+
+            FBVersion vers = new FBVersion();
+            FBFile file = (FBFile) (new FBFileBuilder(@"asd\due.txt")).generate();
+            vers.addElement(file);
+            SerializedVersion serV = new SerializedVersion(vers.serialize());
+            var uploadData = server.getFile(serV);
+
+            UsefullMethods.ReceiveFile(uploadData.ip, uploadData.port, uploadData.token, @"asd\test.txt");
+            String content = File.ReadAllText(@"asd\test.txt");
+            Assert.IsTrue(content.Contains("Third lines"));
         }
 
         [TestCleanup]

@@ -466,11 +466,45 @@ namespace FolderBackup.Server
             //return new FileStream(user.rootDirectory.FullName + @"\tmp.zip", FileMode.Open, FileAccess.Read);
 
             string token = Server.GetUniqueKey(20);
-            SecureReverter sr = new SecureReverter(this, token,
+            SecureDownloader sr = new SecureDownloader(this, token,
                 this.ManageCompleteUpload, this.ManageFailedUpload, FilesStream);
             UInt16 port = sr.port;
 
             return new UploadData(UsefullMethods.GetLocalIPAddress(), port, token);
+        }
+
+        private PhysicFile findPhysicFile(FBFile f)
+        {
+            foreach(PhysicFile ph in realFiles.list)
+            {
+                if (ph.getFBFile().Equals(f))
+                    return ph;
+            }
+            return null;
+        }
+
+        public UploadData getFile(SerializedVersion serV)
+        {
+            FBVersion ver = FBVersion.deserialize(serV.encodedVersion);
+            PhysicFile found = null;
+
+            if (ver.fileList.Count != 1)
+                return null;
+
+            foreach(FBFile file in ver.fileList)
+            {
+                found = findPhysicFile(file);
+                if (found == null)
+                    return null;
+            }
+
+            FileStream fStream = new FileStream(found.getRealFileInfo().FullName,
+                FileMode.Open, FileAccess.Read);
+            String token = Server.GetUniqueKey(20);
+            var secDown = new SecureDownloader(this, token, null, null, fStream);
+
+            return new UploadData(UsefullMethods.GetLocalIPAddress(), secDown.port,
+                token);
         }
 
         ~Server()

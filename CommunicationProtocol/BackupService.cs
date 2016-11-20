@@ -28,5 +28,7 @@ namespace FolderBackup.CommunicationProtocol
         public UploadData resetToPreviousVersion(int versionAgo) { return null; }
 
         public SerializedVersion[] getOldVersions() { return null; }
+
+        public UploadData getFile(SerializedVersion serV) { return null; }
     }
 }
