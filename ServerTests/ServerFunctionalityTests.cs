@@ -40,8 +40,7 @@ namespace FolderBackup.ServerTests
             System.IO.File.WriteAllLines(@"asd\ciao\due.txt", lines);
         }
 
-        [TestMethod]
-        public void TransactionCommitTest()
+        private void doTransaction()
         {
             FBVersionBuilder vb = new FBVersionBuilder(rinfo.FullName);
             FolderBackup.Shared.FBVersion v = (FolderBackup.Shared.FBVersion)vb.generate();
@@ -58,7 +57,7 @@ namespace FolderBackup.ServerTests
             }
 
             FBFile file = (FBFile)new FBFileBuilder(@"asd\uno.txt").generate();
-            string[] lines = {"First line", "Second line", "Third line" };
+            string[] lines = { "First line", "Second line", "Third line" };
             System.IO.File.WriteAllLines(@"asd\uno.txt", lines);
             FileStream fstream = new FileStream(@"asd\uno.txt", FileMode.Open, FileAccess.Read);
 
@@ -67,22 +66,29 @@ namespace FolderBackup.ServerTests
 
             //Assert.AreEqual(server.uploadFile(fstream), file.hash);
             //fstream.Close();
-            
+
             file = (FBFile)new FBFileBuilder(@"asd\due.txt").generate();
-            string[] lines1 = {"First line", "Second line", "Third lines" };
+            string[] lines1 = { "First line", "Second line", "Third lines" };
             System.IO.File.WriteAllLines(@"asd\due.txt", lines1);
             fstream = new FileStream(@"asd\due.txt", FileMode.Open, FileAccess.Read);
 
             credential = server.uploadFile(new SerializedFile(file.serialize()));
             UsefullMethods.SendFile(credential.ip, credential.port, credential.token, fstream);
             System.Threading.Thread.Sleep(1000);
+        }
+
+        [TestMethod]
+        public void TransactionCommitTest()
+        {
+            doTransaction();
             Assert.IsTrue(server.commit());
         }
 
         [TestMethod]
         public void GetOldVersionsTest()
         {
-            this.TransactionCommitTest();
+            doTransaction();
+            server.commit();
 
             SerializedVersion[] serVers = server.getOldVersions();
             Assert.IsTrue(serVers.Length == 1);
@@ -96,7 +102,9 @@ namespace FolderBackup.ServerTests
         [TestMethod]
         public void DetectEqualVersionTest()
         {
-            this.TransactionCommitTest();
+            doTransaction();
+            server.commit();
+
             FBVersionBuilder vb = new FBVersionBuilder(rinfo.FullName);
             FolderBackup.Shared.FBVersion v = (FolderBackup.Shared.FBVersion)vb.generate();
 
@@ -108,7 +116,8 @@ namespace FolderBackup.ServerTests
         [TestMethod]
         public void PersistenceTest()
         {
-            TransactionCommitTest();
+            doTransaction();
+            server.commit();
             server = null;
 
             server = new Server.Server();
@@ -174,7 +183,8 @@ namespace FolderBackup.ServerTests
         [TestMethod]
         public void GetFileTest()
         {
-            TransactionCommitTest();
+            doTransaction();
+            server.commit();
 
             FBVersion vers = new FBVersion();
             FBFile file = (FBFile) (new FBFileBuilder(@"asd\due.txt")).generate();
@@ -185,6 +195,22 @@ namespace FolderBackup.ServerTests
             UsefullMethods.ReceiveFile(uploadData.ip, uploadData.port, uploadData.token, @"asd\test.txt");
             String content = File.ReadAllText(@"asd\test.txt");
             Assert.IsTrue(content.Contains("Third lines"));
+        }
+
+        [TestMethod]
+        public void GetFileFailTest()
+        {
+            doTransaction();
+            server.commit();
+
+            FBVersion vers = new FBVersion();
+            FBFile file = (FBFile)(new FBFileBuilder(@"asd\due.txt")).generate();
+            file.hash = "asdsdaasd";
+            vers.addElement(file);
+            SerializedVersion serV = new SerializedVersion(vers.serialize());
+            var uploadData = server.getFile(serV);
+            Assert.IsNull(uploadData);
+
         }
 
         [TestCleanup]
