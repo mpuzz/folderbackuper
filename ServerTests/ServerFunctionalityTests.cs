@@ -61,7 +61,7 @@ namespace FolderBackup.ServerTests
             System.IO.File.WriteAllLines(@"asd\uno.txt", lines);
             FileStream fstream = new FileStream(@"asd\uno.txt", FileMode.Open, FileAccess.Read);
 
-            UploadData credential = server.uploadFile(new SerializedFile(file.serialize()));
+            UploadData credential = server.uploadFile();
             UsefullMethods.SendFile(credential.ip, credential.port, credential.token, fstream);
 
             //Assert.AreEqual(server.uploadFile(fstream), file.hash);
@@ -72,7 +72,7 @@ namespace FolderBackup.ServerTests
             System.IO.File.WriteAllLines(@"asd\due.txt", lines1);
             fstream = new FileStream(@"asd\due.txt", FileMode.Open, FileAccess.Read);
 
-            credential = server.uploadFile(new SerializedFile(file.serialize()));
+            credential = server.uploadFile();
             UsefullMethods.SendFile(credential.ip, credential.port, credential.token, fstream);
             System.Threading.Thread.Sleep(1000);
         }
@@ -156,7 +156,7 @@ namespace FolderBackup.ServerTests
             FileStream fstream = new FileStream(@"asd\uno.txt", FileMode.Open, FileAccess.Read);
             //Assert.AreEqual(server.uploadFile(fstream), file.hash);
             //fstream.Close();
-            UploadData credential = server.uploadFile(new SerializedFile(file.serialize()));
+            UploadData credential = server.uploadFile();
             UsefullMethods.SendFile(credential.ip, credential.port, credential.token, fstream);
 
             file = (FBFile)new FBFileBuilder(@"asd\due.txt").generate();
@@ -165,7 +165,7 @@ namespace FolderBackup.ServerTests
             fstream = new FileStream(@"asd\due.txt", FileMode.Open, FileAccess.Read);
             //Assert.AreEqual(server.uploadFile(fstream), file.hash);
             //fstream.Close();
-            credential = server.uploadFile(new SerializedFile(file.serialize()));
+            credential = server.uploadFile();
             UsefullMethods.SendFile(credential.ip, credential.port, credential.token, fstream);
             
             Assert.IsTrue(server.rollback());

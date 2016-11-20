@@ -21,7 +21,7 @@ namespace FolderBackup.CommunicationProtocol
 
         public Boolean rollback() { return false; }
 
-        public UploadData uploadFile(SerializedFile file) { return null; }
+        public UploadData uploadFile() { return null; }
 
         public byte[][] getFilesToUpload() { return null; }
 

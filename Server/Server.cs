@@ -325,8 +325,10 @@ namespace FolderBackup.Server
 
         }
 
-        public UploadData uploadFile(SerializedFile fileStream)
+        public UploadData uploadFile()
         {
+            this.checkAuthentication();
+            this.checkTransactionIsEnabled();
             string token = Server.GetUniqueKey(20);
             SecureUploader channel = new SecureUploader(this, token, this.ManageCompleteUpload, this.ManageFailedUpload);
             UInt16 port = channel.port;
