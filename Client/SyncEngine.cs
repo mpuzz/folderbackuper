@@ -16,6 +16,16 @@ namespace FolderBackup.Client
 {
     public class SyncEngine
     {
+        public enum TypeThread
+        {
+            SYNC
+        };
+        public enum StatusCode
+        {
+            WORKING,
+            IDLE,
+            ABORTED
+        }
         Config conf = Config.Instance();
         FBVersionBuilder vb = null;
         FBVersion cv;
@@ -28,16 +38,18 @@ namespace FolderBackup.Client
         //Del statusUpdateQueue = new List<Delegate>();
         public delegate void StatusUpdate(String newstatus);
         public StatusUpdate statusUpdate ;
-        String status {
+        private String _status;
+        public String status {
             get
             {
-                return status;
+                return _status;
             }
             set
             {
                 if (statusUpdate != null) {
                     statusUpdate.Invoke(value);
                 }
+                _status = value;
             }
 
         }
@@ -52,11 +64,10 @@ namespace FolderBackup.Client
 
         private SyncEngine()
         {
-
             status = "Idle";
             this.server = Const<BackupServiceClient>.Instance().get();
             String dirPath = conf.targetPath.get();
-
+            threadCallback = new ThreadStatus(this.ThreadMonitor);
             //Directory.SetCurrentDirectory(dirPath);
             vb = new FBVersionBuilder(dirPath);
             cv = (FBVersion)vb.generate();
@@ -82,10 +93,12 @@ namespace FolderBackup.Client
             this.stopSync = true;
             workingThread["sync"].Join();
         }
+
+        public delegate void ThreadStatus(TypeThread type, StatusCode ts, String status);
+        public ThreadStatus threadCallback;
         private void sync()
         {
             String dirPath = conf.targetPath.get();
-
             if (dirPath == null || !Directory.Exists(dirPath))
             {
                 throw new DirectoryNotFoundException("Directory in configuration is not valid");
@@ -101,12 +114,15 @@ namespace FolderBackup.Client
                 {
                     fileToSync.Add(FBFile.deserialize(bf));
                 }
+
+                int i = 0;
                 try
                 {
                     foreach (FBFile f in fileToSync)
                     {
                         if (!this.stopSync)
                         {
+                            threadCallback.Invoke(TypeThread.SYNC, StatusCode.WORKING, "Syncing file "+i+" of " + fileToSync.Count);
                             FBFileClient cf = FBFileClient.generate(f);
                             SerializedFile sf = new SerializedFile();
                             sf.encodedFile = f.serialize();
@@ -114,6 +130,7 @@ namespace FolderBackup.Client
                             SendFile(cedential, new FileStream(cf.FullName, FileMode.Open));
                         }else
                         {
+                            threadCallback.Invoke(TypeThread.SYNC, StatusCode.ABORTED, "Syncing Stopped");
                             server.rollback();
                             break;
                         }
@@ -128,12 +145,14 @@ namespace FolderBackup.Client
                     server.commit();
                 }
                 this.status = "Idle";
+                threadCallback.Invoke(TypeThread.SYNC, StatusCode.IDLE, "Sync completed");
+
             }
+
         }
 
         private void SendFile(UploadData credential, FileStream fstream)
         {
-            System.Threading.Thread.Sleep(100);
             TcpClient client = new TcpClient("127.0.0.1", credential.port);
             SslStream ssl = new SslStream(
                 client.GetStream(), false,
@@ -146,6 +165,14 @@ namespace FolderBackup.Client
             ssl.Close();
             fstream.Close();
             
+        }
+
+       void ThreadMonitor(TypeThread type,StatusCode sc, String status)
+        {
+            if (type == TypeThread.SYNC)
+            {
+                this.status = status;
+            }
         }
 
 

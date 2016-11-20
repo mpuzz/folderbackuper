@@ -19,11 +19,9 @@ namespace ClientTest
         {
             CleanUp();
             String token;
-            String username = "testUser";
-            String password = "ciao";
+            String username = "dsa";
+            String password = "123";
             server = new BackupServiceClient();
-            string salt = server.registerStep1(username);
-            server.registerStep2(username, AuthenticationPrimitives.hashPassword(password, salt), salt);
             server = MainWindow.logIn(username,password,out token);
             Const<BackupServiceClient>.Instance().set(server);
             if (!Directory.Exists(path))

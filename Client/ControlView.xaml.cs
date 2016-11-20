@@ -15,6 +15,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using static FolderBackup.Client.SyncEngine;
 
 namespace FolderBackup.Client
 {
@@ -28,34 +29,56 @@ namespace FolderBackup.Client
         private String targetPath;
         FBVersion[] versions;
         SyncEngine se = SyncEngine.Instance();
+        StatusUpdate su;
+        const string TIMESTAMP_FORMAT = "MMM_dd_yyyy_HH_MM_ss";
 
+        List<System.Windows.Controls.Button> versionButtons = new List<System.Windows.Controls.Button> ();
         public Window parent { get; set; }
+        ~ControlView()
+        {
+            se.statusUpdate -= su;
+        }
         public ControlView()
         {
             this.server = Const<BackupServiceClient>.Instance().get();   
             InitializeComponent();
-
-            se.statusUpdate += new SyncEngine.StatusUpdate(UpdateStatus);
+            su = new StatusUpdate(UpdateStatus);
+            se.statusUpdate += su;
+            UpdateStatus(se.status);
             targetPath = conf.targetPath.get();
             SerializedVersion[] sversions = server.getOldVersions();
             this.versions = new FBVersion[sversions.Length];
             int i = 0;
+
             foreach (SerializedVersion v in sversions ) {
                 versions[i] = FBVersion.deserialize(v.encodedVersion);
                 System.Windows.Controls.Button button = new System.Windows.Controls.Button();
-                button.Name = versions[i].timestamp.ToString("MMM_dd_yyyy_HH_MM_ss");
+                button.Name = versions[i].timestamp.ToString(TIMESTAMP_FORMAT);
                 button.Content = versions[i].timestamp.ToString("MMM, dd yyyy HH:MM");
                 button.Click+=versionClick;
                 button.MinWidth = 200;
                 button.MinHeight = 22;
-                Color c = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
-                button.Background = new SolidColorBrush(c);
+                if (i == sversions.Length - 1) {
+                    Color c = (Color)ColorConverter.ConvertFromString("#FF9C1A04");
+                    button.Background = new SolidColorBrush(c);
+                    c = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
+                    button.Foreground = new SolidColorBrush(c);
+                }
+                else
+                {
+                    Color c = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
+                    button.Background = new SolidColorBrush(c);
+                    c = (Color)ColorConverter.ConvertFromString("#FF000000");
+                    button.Foreground = new SolidColorBrush(c);
+                }
                 versionBox.Items.Add(button);
+                versionButtons.Add(button);
                 i++;
             }
             if (versions.Length>0) {
                 versionView.Items.Add(CreateDirectoryNode(versions[versions.Length - 1].root));
             }
+
             // if the path is not setted a windows for selecting the path must be shown
             if (targetPath == null)
             {
@@ -72,9 +95,24 @@ namespace FolderBackup.Client
             String name = ((System.Windows.Controls.Button)sender).Name;
             //search version
             FBVersion v=null;
-            foreach(FBVersion x in this.versions)
+            foreach (System.Windows.Controls.Button x in versionBox.Items)
             {
-                if (x.timestamp.ToString("MMM_dd_yyyy__HH_MM_ss") == name)
+                if (sender == x) {
+                    Color c = (Color)ColorConverter.ConvertFromString("#FF9C1A04");
+                    x.Background = new SolidColorBrush(c);
+                    c = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
+                    x.Foreground = new SolidColorBrush(c);
+                }
+                else { 
+                    Color c = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
+                    x.Background = new SolidColorBrush(c);
+                    c = (Color)ColorConverter.ConvertFromString("#FF000000");
+                    x.Foreground = new SolidColorBrush(c);
+                }
+            }
+            foreach (FBVersion x in this.versions)
+            {
+                if (x.timestamp.ToString(TIMESTAMP_FORMAT) == name)
                 {
                     v = x;
                     break;
@@ -105,9 +143,11 @@ namespace FolderBackup.Client
                 if (root.content[key].GetType() == typeof(FBDirectory))
                 {
                     treeItem.Items.Add(CreateDirectoryNode((FBDirectory)root.content[key]));
+                    treeItem.IsExpanded = true;
                 }else
                 {
                     treeItem.Items.Add(new TreeViewItem() { Header = key });
+
                 }
             }
 

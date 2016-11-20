@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.Windows.Forms;
+using static FolderBackup.Client.SyncEngine;
 
 namespace FolderBackup.Client
 {
@@ -56,7 +57,7 @@ namespace FolderBackup.Client
             this.messageItem.Index = 0;
             this.messageItem.Text = "";
             se.statusUpdate = new SyncEngine.StatusUpdate(UpdateStatus);
-            
+            UpdateStatus(se.status);
 
             // Set up how the form should be displayed.
             this.ClientSize = new System.Drawing.Size(292, 266);
@@ -135,17 +136,33 @@ namespace FolderBackup.Client
 
             if (((MenuItem)Sender).Name == "StartSync")
             {
-                ((MenuItem)Sender).Name = "StopSync";
-                ((MenuItem)Sender).Text = "Stop Sync";
                 se.StartSync();
             }
             else
             {
                 se.StopSync();
-                ((MenuItem)Sender).Name = "StartSync";
-                ((MenuItem)Sender).Text = "Start Sync";
-                
             }
         }
+        void ThreadMonitor(TypeThread type, StatusCode sc, String status)
+        {
+            if (type == TypeThread.SYNC)
+            {
+                if (sc == StatusCode.WORKING)
+                {
+                    this.syncItem.Name = "StopSync";
+                    this.syncItem.Text = "Stop Sync";
+                    this.messageItem.Text = status;
+                   
+                }
+                else
+                {
+                    this.syncItem.Name = "StartSync";
+                    this.syncItem.Text = "Start Sync";
+                    this.messageItem.Text = status;
+                }
+            }
+        }
+
+
+        }
     }
-}
