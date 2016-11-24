@@ -102,47 +102,13 @@ namespace FolderBackup.CommunicationProtocol
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
-    [System.Runtime.Serialization.DataContractAttribute(Name="SerializedFile", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
-    public partial class SerializedFile : object, System.Runtime.Serialization.IExtensibleDataObject
-    {
-        
-        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
-        
-        private byte[] encodedFileField;
-        
-        public System.Runtime.Serialization.ExtensionDataObject ExtensionData
-        {
-            get
-            {
-                return this.extensionDataField;
-            }
-            set
-            {
-                this.extensionDataField = value;
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public byte[] encodedFile
-        {
-            get
-            {
-                return this.encodedFileField;
-            }
-            set
-            {
-                this.encodedFileField = value;
-            }
-        }
-    }
-    
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "4.0.0.0")]
     [System.Runtime.Serialization.DataContractAttribute(Name="UploadData", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
     public partial class UploadData : object, System.Runtime.Serialization.IExtensibleDataObject
     {
         
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        private string ipField;
         
         private ushort portField;
         
@@ -157,6 +123,19 @@ namespace FolderBackup.CommunicationProtocol
             set
             {
                 this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string ip
+        {
+            get
+            {
+                return this.ipField;
+            }
+            set
+            {
+                this.ipField = value;
             }
         }
         
@@ -226,7 +205,7 @@ namespace FolderBackup.CommunicationProtocol
 
 
 [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
-[System.ServiceModel.ServiceContractAttribute(ConfigurationName="IBackupService")]
+[System.ServiceModel.ServiceContractAttribute(ConfigurationName="IBackupService", SessionMode=System.ServiceModel.SessionMode.Required)]
 public interface IBackupService
 {
     
@@ -237,11 +216,11 @@ public interface IBackupService
     [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/registerStep1", ReplyAction="http://tempuri.org/IBackupService/registerStep1Response")]
     System.Threading.Tasks.Task<string> registerStep1Async(string username);
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/registerStep2", ReplyAction="http://tempuri.org/IBackupService/registerStep2Response")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/registerStep2", ReplyAction="http://tempuri.org/IBackupService/registerStep2Response")]
     [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action="http://tempuri.org/IBackupService/registerStep2ServiceErrorMessageFault", Name="ServiceErrorMessage", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
     bool registerStep2(string username, string password, string salt);
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/registerStep2", ReplyAction="http://tempuri.org/IBackupService/registerStep2Response")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/registerStep2", ReplyAction="http://tempuri.org/IBackupService/registerStep2Response")]
     System.Threading.Tasks.Task<bool> registerStep2Async(string username, string password, string salt);
     
     [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/authStep1", ReplyAction="http://tempuri.org/IBackupService/authStep1Response")]
@@ -251,68 +230,75 @@ public interface IBackupService
     [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/authStep1", ReplyAction="http://tempuri.org/IBackupService/authStep1Response")]
     System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.AuthenticationData> authStep1Async(string username);
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/authStep2", ReplyAction="http://tempuri.org/IBackupService/authStep2Response")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/authStep2", ReplyAction="http://tempuri.org/IBackupService/authStep2Response")]
     [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action="http://tempuri.org/IBackupService/authStep2ServiceErrorMessageFault", Name="ServiceErrorMessage", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
     string authStep2(string token, string username, string password);
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/authStep2", ReplyAction="http://tempuri.org/IBackupService/authStep2Response")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/authStep2", ReplyAction="http://tempuri.org/IBackupService/authStep2Response")]
     System.Threading.Tasks.Task<string> authStep2Async(string token, string username, string password);
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/getCurrentVersion", ReplyAction="http://tempuri.org/IBackupService/getCurrentVersionResponse")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/getCurrentVersion", ReplyAction="http://tempuri.org/IBackupService/getCurrentVersionResponse")]
     [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action="http://tempuri.org/IBackupService/getCurrentVersionServiceErrorMessageFault", Name="ServiceErrorMessage", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
     FolderBackup.CommunicationProtocol.SerializedVersion getCurrentVersion();
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/getCurrentVersion", ReplyAction="http://tempuri.org/IBackupService/getCurrentVersionResponse")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/getCurrentVersion", ReplyAction="http://tempuri.org/IBackupService/getCurrentVersionResponse")]
     System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.SerializedVersion> getCurrentVersionAsync();
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/newTransaction", ReplyAction="http://tempuri.org/IBackupService/newTransactionResponse")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/newTransaction", ReplyAction="http://tempuri.org/IBackupService/newTransactionResponse")]
     [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action="http://tempuri.org/IBackupService/newTransactionServiceErrorMessageFault", Name="ServiceErrorMessage", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
     bool newTransaction(FolderBackup.CommunicationProtocol.SerializedVersion newVersion);
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/newTransaction", ReplyAction="http://tempuri.org/IBackupService/newTransactionResponse")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/newTransaction", ReplyAction="http://tempuri.org/IBackupService/newTransactionResponse")]
     System.Threading.Tasks.Task<bool> newTransactionAsync(FolderBackup.CommunicationProtocol.SerializedVersion newVersion);
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/commit", ReplyAction="http://tempuri.org/IBackupService/commitResponse")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/commit", ReplyAction="http://tempuri.org/IBackupService/commitResponse")]
     [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action="http://tempuri.org/IBackupService/commitServiceErrorMessageFault", Name="ServiceErrorMessage", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
     bool commit();
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/commit", ReplyAction="http://tempuri.org/IBackupService/commitResponse")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/commit", ReplyAction="http://tempuri.org/IBackupService/commitResponse")]
     System.Threading.Tasks.Task<bool> commitAsync();
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/rollback", ReplyAction="http://tempuri.org/IBackupService/rollbackResponse")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/rollback", ReplyAction="http://tempuri.org/IBackupService/rollbackResponse")]
     [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action="http://tempuri.org/IBackupService/rollbackServiceErrorMessageFault", Name="ServiceErrorMessage", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
     bool rollback();
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/rollback", ReplyAction="http://tempuri.org/IBackupService/rollbackResponse")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/rollback", ReplyAction="http://tempuri.org/IBackupService/rollbackResponse")]
     System.Threading.Tasks.Task<bool> rollbackAsync();
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/uploadFile", ReplyAction="http://tempuri.org/IBackupService/uploadFileResponse")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/uploadFile", ReplyAction="http://tempuri.org/IBackupService/uploadFileResponse")]
     [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action="http://tempuri.org/IBackupService/uploadFileServiceErrorMessageFault", Name="ServiceErrorMessage", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
-    FolderBackup.CommunicationProtocol.UploadData uploadFile(FolderBackup.CommunicationProtocol.SerializedFile file);
+    FolderBackup.CommunicationProtocol.UploadData uploadFile();
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/uploadFile", ReplyAction="http://tempuri.org/IBackupService/uploadFileResponse")]
-    System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.UploadData> uploadFileAsync(FolderBackup.CommunicationProtocol.SerializedFile file);
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/uploadFile", ReplyAction="http://tempuri.org/IBackupService/uploadFileResponse")]
+    System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.UploadData> uploadFileAsync();
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/getFilesToUpload", ReplyAction="http://tempuri.org/IBackupService/getFilesToUploadResponse")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/getFilesToUpload", ReplyAction="http://tempuri.org/IBackupService/getFilesToUploadResponse")]
     [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action="http://tempuri.org/IBackupService/getFilesToUploadServiceErrorMessageFault", Name="ServiceErrorMessage", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
     byte[][] getFilesToUpload();
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/getFilesToUpload", ReplyAction="http://tempuri.org/IBackupService/getFilesToUploadResponse")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/getFilesToUpload", ReplyAction="http://tempuri.org/IBackupService/getFilesToUploadResponse")]
     System.Threading.Tasks.Task<byte[][]> getFilesToUploadAsync();
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/resetToPreviousVersion", ReplyAction="http://tempuri.org/IBackupService/resetToPreviousVersionResponse")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/resetToPreviousVersion", ReplyAction="http://tempuri.org/IBackupService/resetToPreviousVersionResponse")]
     [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action="http://tempuri.org/IBackupService/resetToPreviousVersionServiceErrorMessageFault", Name="ServiceErrorMessage", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
     FolderBackup.CommunicationProtocol.UploadData resetToPreviousVersion(int versionAgo);
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/resetToPreviousVersion", ReplyAction="http://tempuri.org/IBackupService/resetToPreviousVersionResponse")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/resetToPreviousVersion", ReplyAction="http://tempuri.org/IBackupService/resetToPreviousVersionResponse")]
     System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.UploadData> resetToPreviousVersionAsync(int versionAgo);
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/getOldVersions", ReplyAction="http://tempuri.org/IBackupService/getOldVersionsResponse")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/getOldVersions", ReplyAction="http://tempuri.org/IBackupService/getOldVersionsResponse")]
     [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action="http://tempuri.org/IBackupService/getOldVersionsServiceErrorMessageFault", Name="ServiceErrorMessage", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
     FolderBackup.CommunicationProtocol.SerializedVersion[] getOldVersions();
     
-    [System.ServiceModel.OperationContractAttribute(Action="http://tempuri.org/IBackupService/getOldVersions", ReplyAction="http://tempuri.org/IBackupService/getOldVersionsResponse")]
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/getOldVersions", ReplyAction="http://tempuri.org/IBackupService/getOldVersionsResponse")]
     System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.SerializedVersion[]> getOldVersionsAsync();
+    
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/getFile", ReplyAction="http://tempuri.org/IBackupService/getFileResponse")]
+    [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action="http://tempuri.org/IBackupService/getFileServiceErrorMessageFault", Name="ServiceErrorMessage", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
+    FolderBackup.CommunicationProtocol.UploadData getFile(FolderBackup.CommunicationProtocol.SerializedVersion serV);
+    
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/getFile", ReplyAction="http://tempuri.org/IBackupService/getFileResponse")]
+    System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.UploadData> getFileAsync(FolderBackup.CommunicationProtocol.SerializedVersion serV);
 }
 
 [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -429,14 +415,14 @@ public partial class BackupServiceClient : System.ServiceModel.ClientBase<IBacku
         return base.Channel.rollbackAsync();
     }
     
-    public FolderBackup.CommunicationProtocol.UploadData uploadFile(FolderBackup.CommunicationProtocol.SerializedFile file)
+    public FolderBackup.CommunicationProtocol.UploadData uploadFile()
     {
-        return base.Channel.uploadFile(file);
+        return base.Channel.uploadFile();
     }
     
-    public System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.UploadData> uploadFileAsync(FolderBackup.CommunicationProtocol.SerializedFile file)
+    public System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.UploadData> uploadFileAsync()
     {
-        return base.Channel.uploadFileAsync(file);
+        return base.Channel.uploadFileAsync();
     }
     
     public byte[][] getFilesToUpload()
@@ -467,5 +453,15 @@ public partial class BackupServiceClient : System.ServiceModel.ClientBase<IBacku
     public System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.SerializedVersion[]> getOldVersionsAsync()
     {
         return base.Channel.getOldVersionsAsync();
+    }
+    
+    public FolderBackup.CommunicationProtocol.UploadData getFile(FolderBackup.CommunicationProtocol.SerializedVersion serV)
+    {
+        return base.Channel.getFile(serV);
+    }
+    
+    public System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.UploadData> getFileAsync(FolderBackup.CommunicationProtocol.SerializedVersion serV)
+    {
+        return base.Channel.getFileAsync(serV);
     }
 }

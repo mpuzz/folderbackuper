@@ -31,13 +31,20 @@ namespace FolderBackup.Client
         SyncEngine.StatusUpdate su;
         const string TIMESTAMP_FORMAT = "MMM_dd_yyyy_HH_MM_ss";
 
+        private static ControlView instance;
+
+        public static ControlView Instance()
+        {
+            if (instance == null)
+            {
+                instance = new ControlView();
+            }
+            return instance;
+        }
         List<System.Windows.Controls.Button> versionButtons = new List<System.Windows.Controls.Button> ();
         public Window parent { get; set; }
-        ~ControlView()
-        {
-            se.statusUpdate -= su;
-        }
-        public ControlView()
+       
+        private ControlView()
         {
             this.server = Const<BackupServiceClient>.Instance().get();   
             InitializeComponent();
@@ -49,6 +56,7 @@ namespace FolderBackup.Client
             this.versions = new FBVersion[sversions.Length];
             int i = 0;
 
+            se.watcher.EnableRaisingEvents = false;
             foreach (SerializedVersion v in sversions ) {
                 versions[i] = FBVersion.deserialize(v.encodedVersion);
                 System.Windows.Controls.Button button = new System.Windows.Controls.Button();
@@ -152,6 +160,21 @@ namespace FolderBackup.Client
 
             return treeItem;
         }
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            this.Hide();
+            ControlView.instance = null;
+            se.statusUpdate -= su;
+            se.watcher.EnableRaisingEvents = true;
+        }
+        private void sync_Click(object sender, RoutedEventArgs e)
+        {
 
+        }
+
+        private void preview_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

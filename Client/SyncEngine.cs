@@ -30,7 +30,7 @@ namespace FolderBackup.Client
         FBVersionBuilder vb = null;
         FBVersion cv;
         BackupServiceClient server;
-
+        public FileSystemWatcher watcher;
         Dictionary<String,Thread> workingThread= new Dictionary<String,Thread>();
         bool stopSync = false;
         private static SyncEngine instance;
@@ -68,9 +68,18 @@ namespace FolderBackup.Client
             this.server = Const<BackupServiceClient>.Instance().get();
             String dirPath = conf.targetPath.get();
             threadCallback = new ThreadStatus(this.ThreadMonitor);
+            watcher = new FileSystemWatcher();
+            watcher.NotifyFilter = NotifyFilters.Size | NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+            // Add event handlers.
+            watcher.Changed += new FileSystemEventHandler(OnChanged);
+            watcher.Created += new FileSystemEventHandler(OnChanged);
+            watcher.Deleted += new FileSystemEventHandler(OnChanged);
+            watcher.Renamed += new RenamedEventHandler(OnChanged);
+            watcher.Path = dirPath;
+            // Begin watching.
+            watcher.EnableRaisingEvents = true;
             //Directory.SetCurrentDirectory(dirPath);
             vb = new FBVersionBuilder(dirPath);
-            cv = (FBVersion)vb.generate();
 
         }
 
@@ -92,12 +101,15 @@ namespace FolderBackup.Client
         {
             this.stopSync = true;
             workingThread["sync"].Join();
+            workingThread["sync"]=null;
+            this.stopSync = false;
         }
 
         public delegate void ThreadStatus(TypeThread type, StatusCode ts, String status);
         public ThreadStatus threadCallback;
         private void sync()
         {
+            cv = (FBVersion)vb.generate();
             String dirPath = conf.targetPath.get();
             if (dirPath == null || !Directory.Exists(dirPath))
             {
@@ -105,6 +117,8 @@ namespace FolderBackup.Client
             }
             SerializedVersion serV = new SerializedVersion();
             serV.encodedVersion = cv.serialize();
+            threadCallback.Invoke(TypeThread.SYNC, StatusCode.WORKING, "Start syncing");
+
             if (server.newTransaction(serV))
             {
                 this.status = "Syncing";
@@ -123,43 +137,51 @@ namespace FolderBackup.Client
                         if (!this.stopSync)
                         {
                             threadCallback.Invoke(TypeThread.SYNC, StatusCode.WORKING, "Syncing file "+i+" of " + fileToSync.Count);
+                            i++;
                             FBFileClient cf = FBFileClient.generate(f);
-                            SerializedFile sf = new SerializedFile();
-                            sf.encodedFile = f.serialize();
-                            UploadData cedential = server.uploadFile(sf);
-                            SendFile(cedential, new FileStream(cf.FullName, FileMode.Open));
-                        }else
-                        {
-                            threadCallback.Invoke(TypeThread.SYNC, StatusCode.ABORTED, "Syncing Stopped");
-                            server.rollback();
+                            UploadData cedential = server.uploadFile();
+                            UsefullMethods.SendFile(cedential.ip,cedential.port,cedential.token, new FileStream(cf.FullName, FileMode.Open));
+                        }else {
                             break;
                         }
+                    }
+                    if (!this.stopSync)
+                    {
+                        server.commit();
+                        threadCallback.Invoke(TypeThread.SYNC, StatusCode.IDLE, "Sync completed");
+
+                    }
+                    else
+                    {
+                        threadCallback.Invoke(TypeThread.SYNC, StatusCode.ABORTED, "Syncing Stopped");
+                        server.rollback();
+
                     }
                 }
                 catch
                 {
                     server.rollback();
                 }
-                finally
-                {
-                    server.commit();
-                }
+                    
+                
                 this.status = "Idle";
-                threadCallback.Invoke(TypeThread.SYNC, StatusCode.IDLE, "Sync completed");
-
+                
+            }else
+            {
+                threadCallback.Invoke(TypeThread.SYNC, StatusCode.IDLE, "Nothing to be done");
             }
 
         }
 
         private void SendFile(UploadData credential, FileStream fstream)
         {
-            TcpClient client = new TcpClient("127.0.0.1", credential.port);
+            TcpClient client = new TcpClient(credential.ip, credential.port);
             SslStream ssl = new SslStream(
                 client.GetStream(), false,
                 new RemoteCertificateValidationCallback(AuthenticationPrimitives.ValidateServerCertificate),
                 null, EncryptionPolicy.RequireEncryption);
             
-            ssl.AuthenticateAsClient("127.0.0.1", null, System.Security.Authentication.SslProtocols.Tls12, false);
+            ssl.AuthenticateAsClient(credential.ip, null, System.Security.Authentication.SslProtocols.Tls12, false);
             ssl.Write(UsefullMethods.GetBytesFromString(credential.token));
             fstream.CopyTo(ssl);
             ssl.Close();
@@ -167,7 +189,18 @@ namespace FolderBackup.Client
             
         }
 
-       void ThreadMonitor(TypeThread type,StatusCode sc, String status)
+        private static void OnChanged(object source, FileSystemEventArgs e)
+        {
+            if (!SyncEngine.instance.stopSync)
+            {
+                SyncEngine.instance.sync();
+            }
+
+        }
+
+
+
+            void ThreadMonitor(TypeThread type,StatusCode sc, String status)
         {
             if (type == TypeThread.SYNC)
             {

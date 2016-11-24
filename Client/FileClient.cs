@@ -30,7 +30,9 @@ namespace FolderBackup.Client
             FBFile file = new FBFile(finf.Name);
             this.Name = finf.Name;
             this.dimension = finf.Length;
-
+            if (finf.Exists) {
+                Console.WriteLine("ciao");
+            }
             FileStream fileStream = finf.Open(FileMode.Open);
             fileStream.Position = 0;
 
@@ -41,22 +43,19 @@ namespace FolderBackup.Client
 
         public static FileInfo whoami(FBFile file, DirectoryInfo dinfo)
         {
-            foreach (FileInfo f in dinfo.GetFiles())
-            {
-                if (f.Name==file.Name)
-                {
-                    FBFileBuilder fb = new FBFileBuilder(f.FullName);
-                    if (fb.generate().Equals(file))
-                    {
-                        return f;
-                    }
-                }
-            }
+            String path =  dinfo.FullName + "\\" + file.Name;
 
+            FileInfo fi = new FileInfo(path);
+            if (fi.Exists)
+            {
+                return fi;
+            }
 
             foreach (DirectoryInfo dir in dinfo.GetDirectories())
             {
-                return whoami(file, dir);
+                var ret = whoami(file, dir);
+                if (ret != null)
+                    return ret;
             }
 
            

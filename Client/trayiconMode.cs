@@ -13,57 +13,58 @@ namespace FolderBackup.Client
     {
         SyncEngine se = SyncEngine.Instance();
         static private TrayiconMode instance;
-        private System.Windows.Forms.NotifyIcon trayicon;
-        private System.Windows.Forms.ContextMenu Content;
-        private System.Windows.Forms.MenuItem exitItem;
-        private System.Windows.Forms.MenuItem syncItem;
-        private System.Windows.Forms.MenuItem cpItem;
-        private System.Windows.Forms.MenuItem messageItem;
+        private NotifyIcon trayicon;
+        private ContextMenu Content;
+        private MenuItem exitItem;
+        private MenuItem syncItem;
+        private MenuItem cpItem;
+        private MenuItem messageItem;
 
         private System.ComponentModel.IContainer components;
 
         private TrayiconMode()
         {
             this.components = new System.ComponentModel.Container();
-            this.Content = new System.Windows.Forms.ContextMenu();
-            this.exitItem = new System.Windows.Forms.MenuItem();
-            this.cpItem = new System.Windows.Forms.MenuItem();
-            this.syncItem = new System.Windows.Forms.MenuItem();
-            this.messageItem = new System.Windows.Forms.MenuItem();
+            this.Content = new ContextMenu();
+            this.exitItem = new MenuItem();
+            this.cpItem = new MenuItem();
+            this.syncItem = new MenuItem();
+            this.messageItem = new MenuItem();
 
             // Initialize contextMenu1
-            this.Content.MenuItems.AddRange( new System.Windows.Forms.MenuItem[] { this.exitItem });
-            this.Content.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.cpItem });
-            this.Content.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.syncItem });
-            this.Content.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] { this.messageItem });
+            this.Content.MenuItems.Add( this.exitItem );
+            this.Content.MenuItems.Add( this.cpItem );
+            this.Content.MenuItems.Add( this.syncItem );
+            this.Content.MenuItems.Add("-");
+            this.Content.MenuItems.Add(this.messageItem );
 
             // Initialize menuItem1
             this.exitItem.Index = 3;
             this.exitItem.Text = "E&xit";
-            this.exitItem.Click += new System.EventHandler(this.exit_Click);
+            this.exitItem.Click += new EventHandler(this.exit_Click);
 
 
             this.cpItem.Index = 2;
             this.cpItem.Text = "Control Panel";
-            this.cpItem.Click += new System.EventHandler(this.controlPanel_Click);
+            this.cpItem.Click += new EventHandler(this.controlPanel_Click);
 
 
             this.syncItem.Index = 1;
             this.syncItem.Text = "Start Sync";
             this.syncItem.Name = "StartSync";
-            this.syncItem.Click += new System.EventHandler(this.startSync_Click);
+            this.syncItem.Click += new EventHandler(this.startSync_Click);
 
             this.messageItem.Index = 0;
             this.messageItem.Text = "";
+            this.messageItem.Enabled = false;
             se.statusUpdate = new SyncEngine.StatusUpdate(UpdateStatus);
             UpdateStatus(se.status);
-
-            // Set up how the form should be displayed.
+             // Set up how the form should be displayed.
             this.ClientSize = new System.Drawing.Size(292, 266);
             this.Text = "Notify Icon Example";
 
             // Create the NotifyIcon.
-            this.trayicon = new System.Windows.Forms.NotifyIcon(this.components);
+            this.trayicon = new NotifyIcon(this.components);
 
             // The Icon property sets the icon that will appear
             // in the systray for this application.
@@ -123,7 +124,7 @@ namespace FolderBackup.Client
         private void controlPanel_Click(object Sender, EventArgs e)
         {
             // Close the form, which closes the application.
-            ControlView av = new ControlView();
+            ControlView av = ControlView.Instance();
             av.Show();
             av.Activate();
         }
