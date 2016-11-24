@@ -48,24 +48,29 @@ namespace FolderBackup.Client
         {
             this.server = Const<BackupServiceClient>.Instance().get();   
             InitializeComponent();
-            su = new SyncEngine.StatusUpdate(UpdateStatus);
-            se.statusUpdate += su;
-            UpdateStatus(se.status);
             targetPath = conf.targetPath.get();
+            se.threadCallback += ThreadMonitor;
+
+            buildGraphic();
+        }
+
+        private void buildGraphic()
+        {
             SerializedVersion[] sversions = server.getOldVersions();
             this.versions = new FBVersion[sversions.Length];
             int i = 0;
-
             se.watcher.EnableRaisingEvents = false;
-            foreach (SerializedVersion v in sversions ) {
+            foreach (SerializedVersion v in sversions)
+            {
                 versions[i] = FBVersion.deserialize(v.encodedVersion);
                 System.Windows.Controls.Button button = new System.Windows.Controls.Button();
                 button.Name = versions[i].timestamp.ToString(TIMESTAMP_FORMAT);
                 button.Content = versions[i].timestamp.ToString("MMM, dd yyyy HH:MM");
-                button.Click+=versionClick;
+                button.Click += versionClick;
                 button.MinWidth = 200;
                 button.MinHeight = 22;
-                if (i == sversions.Length - 1) {
+                if (i == sversions.Length - 1)
+                {
                     Color c = (Color)ColorConverter.ConvertFromString("#FF9C1A04");
                     button.Background = new SolidColorBrush(c);
                     c = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
@@ -78,22 +83,16 @@ namespace FolderBackup.Client
                     c = (Color)ColorConverter.ConvertFromString("#FF000000");
                     button.Foreground = new SolidColorBrush(c);
                 }
+                versionBox.Items.Clear();
                 versionBox.Items.Add(button);
                 versionButtons.Add(button);
                 i++;
             }
-            if (versions.Length>0) {
-                versionView.Items.Add(CreateDirectoryNode(versions[versions.Length - 1].root));
-            }
 
-            // if the path is not setted a windows for selecting the path must be shown
-            if (targetPath == null)
+            versionView.Items.Clear();
+            if (versions.Length > 0)
             {
-                WelcomeWindows ww = new WelcomeWindows();
-                ww.parent = this;
-                ww.Show();
-                ww.Activate();
-                this.Hide(); 
+                versionView.Items.Add(CreateDirectoryNode(versions[versions.Length - 1].root));
             }
         }
 
@@ -131,13 +130,38 @@ namespace FolderBackup.Client
 
 
         }
-
-        private void UpdateStatus(string status)
+        void ThreadMonitor(SyncEngine.TypeThread type, SyncEngine.StatusCode sc, String status)
         {
-            this.Dispatcher.Invoke(() =>
+            if (type == SyncEngine.TypeThread.SYNC)
             {
-                this.errorBox.Content = status;
-            });
+                this.Dispatcher.Invoke(() =>
+                {
+                    if (sc == SyncEngine.StatusCode.WORKING)
+                    {
+                        this.sync.Content = "Stop Sync";
+                        this.sync.Name = "StopSync";
+                        this.sync.IsEnabled = false;
+                        this.errorBox.Content = status;
+                    }
+                    else if (sc == SyncEngine.StatusCode.SUCCESS)
+                    {
+                        this.errorBox.Content = "Synced";
+                        buildGraphic();
+                        this.sync.Content = "Start Sync";
+                        this.sync.Name = "StartSync";
+                        this.sync.IsEnabled = true;
+                        this.errorBox.Content = status;
+                    }
+                    else
+                    {
+                        this.sync.Content = "Start Sync";
+                        this.sync.Name = "StartSync";
+                        this.sync.IsEnabled = true;
+                        this.errorBox.Content = status;
+                    }
+                    
+                });
+            }
         }
 
         private static TreeViewItem CreateDirectoryNode(FBDirectory root)
@@ -169,7 +193,14 @@ namespace FolderBackup.Client
         }
         private void sync_Click(object sender, RoutedEventArgs e)
         {
-
+            if(((string)((System.Windows.Controls.Button)sender).Content).Equals( "Start Sync"))
+            {
+                se.StartSync();
+            }
+            else
+            {
+                se.StopSync();
+            }
         }
 
         private void preview_Click(object sender, RoutedEventArgs e)

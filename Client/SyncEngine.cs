@@ -24,6 +24,7 @@ namespace FolderBackup.Client
         {
             WORKING,
             IDLE,
+            SUCCESS,
             ABORTED
         }
         Config conf = Config.Instance();
@@ -148,7 +149,7 @@ namespace FolderBackup.Client
                     if (!this.stopSync)
                     {
                         server.commit();
-                        threadCallback.Invoke(TypeThread.SYNC, StatusCode.IDLE, "Sync completed");
+                        threadCallback.Invoke(TypeThread.SYNC, StatusCode.SUCCESS, "Sync completed");
 
                     }
                     else
