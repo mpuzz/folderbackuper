@@ -452,12 +452,14 @@ namespace FolderBackup.Server
 
             diff = actual - old;
 
-            if(diff.fileList != null)
+            if (diff.fileList != null)
+            {
+                //diff.setAbsoluteNameToFile();
                 foreach (FBAbstractElement toDelete in diff.fileList)
                 {
                     instrucionList.Add(new Instruction(InstructionType.DELETE, toDelete.Name, ""));
                 }
-
+            }
             Stream FilesStream = File.OpenWrite(this.user.rootDirectory + @"\instructions.bin");
             BinaryFormatter serializer = new BinaryFormatter();
             serializer.Serialize(FilesStream, instrucionList);
@@ -465,7 +467,8 @@ namespace FolderBackup.Server
 
             zip.CreateEntryFromFile(this.user.rootDirectory + @"\instructions.bin", "instructions.bin", CompressionLevel.Optimal);
             File.Delete(this.user.rootDirectory + @"\instructions.bin");
-            //return new FileStream(user.rootDirectory.FullName + @"\tmp.zip", FileMode.Open, FileAccess.Read);
+            zip.Dispose();
+            FilesStream = new FileStream(user.rootDirectory.FullName + @"\tmp.zip", FileMode.Open, FileAccess.Read);
 
             string token = Server.GetUniqueKey(20);
             SecureDownloader sr = new SecureDownloader(this, token,
