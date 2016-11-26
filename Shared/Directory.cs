@@ -78,11 +78,13 @@ namespace FolderBackup.Shared
                 {
                     if (!entry.Value.isEqualTo(second.content[entry.Key]))
                     {
-                        if (entry.GetType().Equals(first.GetType()) && second.content[entry.Key].Equals(first.GetType()))
+                        if (entry.Value.GetType().Equals(first.GetType()) && second.content[entry.Key].GetType().Equals(first.GetType()))
                         {
                             ret.addContent((FBDirectory)entry.Value - (FBDirectory)second.content[entry.Key]);
+                            continue;
                         }
                         ret.addContent(entry.Value.Clone());
+                        continue;
                     }
                     if (entry.Value.GetType() != first.GetType())
                     {
