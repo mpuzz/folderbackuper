@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -37,6 +38,20 @@ namespace FolderBackup.Client
             public FBAbstractElement item;
             public FBVersion version;
             public string relativePath;
+
+
+            public bool Equals(TreeViewItemFat other)
+            {
+                return (this.item.Name.Equals(other.item.Name) && this.relativePath.Equals(other.relativePath));
+            }
+            public TreeViewItemFat Duplicate()
+            {
+                TreeViewItemFat newNode = new TreeViewItemFat() { Header = this.Header };
+                newNode.item = this.item;
+                newNode.version = this.version;
+                newNode.relativePath = this.relativePath;
+                return newNode;
+            }
         }
 
         public static ControlView Instance()
@@ -47,29 +62,32 @@ namespace FolderBackup.Client
             }
             return instance;
         }
-        List<System.Windows.Controls.Button> versionButtons = new List<System.Windows.Controls.Button> ();
+        List<System.Windows.Controls.Button> versionButtons = new List<System.Windows.Controls.Button>();
         public Window parent { get; set; }
-       
+
         private ControlView()
         {
-            this.server = Const<BackupServiceClient>.Instance().get();   
+            this.server = Const<BackupServiceClient>.Instance().get();
             InitializeComponent();
             targetPath = conf.targetPath.get();
             se.threadCallback += ThreadMonitor;
 
             buildGraphic();
             versionView.MouseDoubleClick += VersionView_MouseDoubleClick;
+            revertList.MouseDoubleClick += VersionView_MouseDoubleClick;
             versionView.SelectedItemChanged += VersionView_SelectedItemChanged;
         }
 
         private void VersionView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             TreeViewItemFat selectedItem = (TreeViewItemFat)this.versionView.SelectedItem;
-            if (selectedItem !=null) {
+            if (selectedItem != null)
+            {
                 if (selectedItem.item.GetType() == typeof(FBDirectory))
                 {
                     this.preview.IsEnabled = false;
-                } else
+                }
+                else
                 {
                     this.preview.IsEnabled = true;
                 }
@@ -124,16 +142,18 @@ namespace FolderBackup.Client
         {
             String name = ((System.Windows.Controls.Button)sender).Name;
             //search version
-            FBVersion v=null;
+            FBVersion v = null;
             foreach (System.Windows.Controls.Button x in versionBox.Items)
             {
-                if (sender == x) {
+                if (sender == x)
+                {
                     Color c = (Color)ColorConverter.ConvertFromString("#FF9C1A04");
                     x.Background = new SolidColorBrush(c);
                     c = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
                     x.Foreground = new SolidColorBrush(c);
                 }
-                else { 
+                else
+                {
                     Color c = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
                     x.Background = new SolidColorBrush(c);
                     c = (Color)ColorConverter.ConvertFromString("#FF000000");
@@ -184,36 +204,28 @@ namespace FolderBackup.Client
                         this.sync.IsEnabled = true;
                         this.errorBox.Content = status;
                     }
-                    
+
                 });
             }
         }
 
-        private void VersionView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            TreeViewItemFat selectedItem = (TreeViewItemFat)this.versionView.SelectedItem;
-            if (selectedItem!=null && selectedItem.item != null) {
-                Console.WriteLine(getPathTreeItem(selectedItem));
-
-
-            }
-        }
+     
 
         private string getPathTreeItem(TreeViewItem item)
         {
-            if (item.Parent.GetType()==typeof(TreeViewItem))
+            if (item.Parent.GetType() == typeof(TreeViewItem))
             {
-                return getPathTreeItem((TreeViewItem)item.Parent)+"\\"+item.Header ;
+                return getPathTreeItem((TreeViewItem)item.Parent) + "\\" + item.Header;
             }
             else
             {
-               return (string) item.Header;
+                return (string)item.Header;
             }
 
         }
 
-        private TreeViewItem CreateDirectoryNode(FBDirectory root,string path)
-        {            
+        private TreeViewItem CreateDirectoryNode(FBDirectory root, string path)
+        {
             TreeViewItemFat treeItem = new TreeViewItemFat();
             treeItem.version = selectedVersion;
             treeItem.item = root;
@@ -225,9 +237,10 @@ namespace FolderBackup.Client
                 if (root.content[key].GetType() == typeof(FBDirectory))
                 {
                     FBDirectory child = (FBDirectory)root.content[key];
-                    treeItem.Items.Add(CreateDirectoryNode(child,path+"\\"+child.Name));
+                    treeItem.Items.Add(CreateDirectoryNode(child, path + "\\" + child.Name));
                     treeItem.IsExpanded = true;
-                }else
+                }
+                else
                 {
                     TreeViewItemFat ti = new TreeViewItemFat() { Header = key };
                     ti.version = selectedVersion;
@@ -252,7 +265,7 @@ namespace FolderBackup.Client
         }
         private void sync_Click(object sender, RoutedEventArgs e)
         {
-            if(((string)((System.Windows.Controls.Button)sender).Content).Equals( "Start Sync"))
+            if (((string)((System.Windows.Controls.Button)sender).Content).Equals("Start Sync"))
             {
                 se.StartSync();
             }
@@ -265,16 +278,58 @@ namespace FolderBackup.Client
         private void preview_Click(object sender, RoutedEventArgs e)
         {
             TreeViewItemFat seletedItem = (TreeViewItemFat)versionView.SelectedItem;
-            string filePath=null;
+            string filePath = null;
             try
             {
                 filePath = se.getFile((FBFile)seletedItem.item);
             }
             catch
             {
-                UsefullMethods.setLabelAlert("danger",errorBox,"Error with communication! Check your connection!");
+                UsefullMethods.setLabelAlert("danger", errorBox, "Error with communication! Check your connection!");
             }
             System.Diagnostics.Process.Start(filePath);
+        }
+
+        private async void VersionView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            TreeViewItemFat selectedItem = (TreeViewItemFat)((TreeView)sender).SelectedItem;
+            if (selectedItem != null && selectedItem.item != null)
+            {
+                if (sender == versionView)
+                {
+                    Console.WriteLine(getPathTreeItem(selectedItem));
+                    bool isIn = false;
+                    foreach (TreeViewItemFat el in revertList.Items)
+                    {
+                        bool tmp = el.Equals(selectedItem);
+                        isIn |= tmp;
+                        if (tmp)
+                        {
+                            Brush pc = el.Background;
+                            Color c = (Color)ColorConverter.ConvertFromString("#FFB13D14");
+                            el.Background = new SolidColorBrush(c);
+                            UsefullMethods.setLabelAlert("danger", errorBox, "File is already in the revert list");
+                            await Task.Delay(700);
+                            el.Background = pc;
+                        }
+                    }
+                    if (!isIn)
+                    {
+                        revertList.Items.Add(selectedItem.Duplicate());
+                    }
+                }
+                else
+                {
+                    revertList.Items.Remove(selectedItem);
+                }
+
+            }
+        }
+        private void revert_Click(object sender, RoutedEventArgs e)
+        {
+            FBVersion lastVers = this.versions[versions.Length - 1];
+
+
         }
     }
 }
