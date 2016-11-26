@@ -10,7 +10,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -28,10 +27,17 @@ namespace FolderBackup.Client
         private String targetPath;
         FBVersion[] versions;
         SyncEngine se = SyncEngine.Instance();
-        SyncEngine.StatusUpdate su;
+
         const string TIMESTAMP_FORMAT = "MMM_dd_yyyy_HH_MM_ss";
 
         private static ControlView instance;
+        private FBVersion selectedVersion;
+        private class TreeViewItemFat : TreeViewItem
+        {
+            public FBAbstractElement item;
+            public FBVersion version;
+            public string relativePath;
+        }
 
         public static ControlView Instance()
         {
@@ -52,6 +58,23 @@ namespace FolderBackup.Client
             se.threadCallback += ThreadMonitor;
 
             buildGraphic();
+            versionView.MouseDoubleClick += VersionView_MouseDoubleClick;
+            versionView.SelectedItemChanged += VersionView_SelectedItemChanged;
+        }
+
+        private void VersionView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            TreeViewItemFat selectedItem = (TreeViewItemFat)this.versionView.SelectedItem;
+            if (selectedItem !=null) {
+                if (selectedItem.item.GetType() == typeof(FBDirectory))
+                {
+                    this.preview.IsEnabled = false;
+                } else
+                {
+                    this.preview.IsEnabled = true;
+                }
+            }
+
         }
 
         private void buildGraphic()
@@ -60,6 +83,7 @@ namespace FolderBackup.Client
             this.versions = new FBVersion[sversions.Length];
             int i = 0;
             se.watcher.EnableRaisingEvents = false;
+            versionBox.Items.Clear();
             foreach (SerializedVersion v in sversions)
             {
                 versions[i] = FBVersion.deserialize(v.encodedVersion);
@@ -83,7 +107,6 @@ namespace FolderBackup.Client
                     c = (Color)ColorConverter.ConvertFromString("#FF000000");
                     button.Foreground = new SolidColorBrush(c);
                 }
-                versionBox.Items.Clear();
                 versionBox.Items.Add(button);
                 versionButtons.Add(button);
                 i++;
@@ -92,7 +115,8 @@ namespace FolderBackup.Client
             versionView.Items.Clear();
             if (versions.Length > 0)
             {
-                versionView.Items.Add(CreateDirectoryNode(versions[versions.Length - 1].root));
+                this.selectedVersion = versions[versions.Length - 1];
+                versionView.Items.Add(CreateDirectoryNode(this.selectedVersion.root, this.selectedVersion.root.Name));
             }
         }
 
@@ -125,7 +149,8 @@ namespace FolderBackup.Client
                 }
             }
             versionView.Items.Clear();
-            versionView.Items.Add(CreateDirectoryNode(v.root));
+            this.selectedVersion = v;
+            versionView.Items.Add(CreateDirectoryNode(this.selectedVersion.root, this.selectedVersion.root.Name));
 
 
 
@@ -164,22 +189,57 @@ namespace FolderBackup.Client
             }
         }
 
-        private static TreeViewItem CreateDirectoryNode(FBDirectory root)
+        private void VersionView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            TreeViewItemFat selectedItem = (TreeViewItemFat)this.versionView.SelectedItem;
+            if (selectedItem!=null && selectedItem.item != null) {
+                Console.WriteLine(getPathTreeItem(selectedItem));
+
+
+            }
+        }
+
+        private string getPathTreeItem(TreeViewItem item)
+        {
+            if (item.Parent.GetType()==typeof(TreeViewItem))
+            {
+                return getPathTreeItem((TreeViewItem)item.Parent)+"\\"+item.Header ;
+            }
+            else
+            {
+               return (string) item.Header;
+            }
+
+        }
+
+        private TreeViewItem CreateDirectoryNode(FBDirectory root,string path)
         {            
-            TreeViewItem treeItem = new TreeViewItem();
+            TreeViewItemFat treeItem = new TreeViewItemFat();
+            treeItem.version = selectedVersion;
+            treeItem.item = root;
             treeItem.Header = root.Name;
+            treeItem.relativePath = path;
 
             foreach (String key in root.content.Keys)
             {
                 if (root.content[key].GetType() == typeof(FBDirectory))
                 {
-                    treeItem.Items.Add(CreateDirectoryNode((FBDirectory)root.content[key]));
+                    FBDirectory child = (FBDirectory)root.content[key];
+                    treeItem.Items.Add(CreateDirectoryNode(child,path+"\\"+child.Name));
                     treeItem.IsExpanded = true;
                 }else
                 {
-                    treeItem.Items.Add(new TreeViewItem() { Header = key });
+                    TreeViewItemFat ti = new TreeViewItemFat() { Header = key };
+                    ti.version = selectedVersion;
+                    ti.item = root.content[key];
+                    ti.relativePath = path;
+                    treeItem.Items.Add(ti);
 
                 }
+            }
+            if (root.content.Count == 0)
+            {
+                treeItem.Items.Add(new TreeViewItemFat() { Header = "" });
             }
 
             return treeItem;
@@ -188,7 +248,6 @@ namespace FolderBackup.Client
         {
             this.Hide();
             ControlView.instance = null;
-            se.statusUpdate -= su;
             se.watcher.EnableRaisingEvents = true;
         }
         private void sync_Click(object sender, RoutedEventArgs e)
@@ -205,7 +264,18 @@ namespace FolderBackup.Client
 
         private void preview_Click(object sender, RoutedEventArgs e)
         {
-
+            TreeViewItemFat seletedItem = (TreeViewItemFat)versionView.SelectedItem;
+            string filePath=null;
+            try
+            {
+                filePath = se.getFile((FBFile)seletedItem.item);
+            }
+            catch
+            {
+                UsefullMethods.setLabelAlert("danger",errorBox,"Error with communication! Check your connection!");
+            }
+            System.Diagnostics.Process.Start(filePath);
         }
     }
 }
+

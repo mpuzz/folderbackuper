@@ -201,7 +201,7 @@ namespace FolderBackup.Client
 
 
 
-            void ThreadMonitor(TypeThread type,StatusCode sc, String status)
+        void ThreadMonitor(TypeThread type,StatusCode sc, String status)
         {
             if (type == TypeThread.SYNC)
             {
@@ -209,6 +209,22 @@ namespace FolderBackup.Client
             }
         }
 
+        public string getFile(FBFile f)
+        {
+            SerializedVersion serV = new SerializedVersion();
+            FBVersion tmpVer = new FBVersion();
+            tmpVer.addElement(f);
+            serV.encodedVersion = tmpVer.serialize();
+            var uploadData = server.getFile(serV);
+            string tmpPath = Path.GetTempPath()+f.Name;
+            if (File.Exists(tmpPath))
+            {
+                File.Delete(tmpPath);
+            }
+            UsefullMethods.ReceiveFile(uploadData.ip, uploadData.port, uploadData.token, tmpPath);
+            return tmpPath;
+
+        }
 
     }
 }
