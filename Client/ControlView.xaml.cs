@@ -149,6 +149,7 @@ namespace FolderBackup.Client
             {
                 this.selectedVersion = versions[versions.Length - 1];
                 versionView.Items.Add(CreateDirectoryNode(this.selectedVersion.root, this.selectedVersion.root.Name));
+                this.revertVersion.IsEnabled = false;
             }
         }
 
@@ -186,7 +187,13 @@ namespace FolderBackup.Client
             this.selectedVersion = v;
             versionView.Items.Add(CreateDirectoryNode(this.selectedVersion.root, this.selectedVersion.root.Name));
 
-
+            if (selectedVersion == versions[versions.Length-1])
+            {
+                this.revertVersion.IsEnabled = false;
+            }else
+            {
+                this.revertVersion.IsEnabled = true;
+            }
 
         }
         void ThreadMonitor(SyncEngine.TypeThread type, SyncEngine.StatusCode sc, String status)

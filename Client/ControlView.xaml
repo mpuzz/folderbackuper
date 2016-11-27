@@ -32,7 +32,9 @@
                     <Button x:Name="sync" Content="Start Sync" Grid.Column="2" Margin="16,30,16,0" VerticalAlignment="Top" Click="sync_Click" Background="White"/>
                     <Button x:Name="preview" Content="Preview" Grid.Column="2" Margin="16,60,16,0" VerticalAlignment="Top" Click="preview_Click" Background="White"/>
                     <Button x:Name="revertFiles" Content="Revert Files" Grid.Column="2" Margin="15,90,17,0" VerticalAlignment="Top" Click="revert_Click" Background="White"/>
-                    <Button x:Name="revertVersion" Content="Revert to this version" Grid.Column="2" Margin="15,120,17,0" VerticalAlignment="Top" Click="RevertToVersion_Click" Background="White"/>
+                    <Button x:Name="revertVersion" Grid.Column="2" Margin="15,120,17,0" VerticalAlignment="Top" Click="RevertToVersion_Click" Background="White" Height="40">
+                        <TextBlock TextWrapping="Wrap" TextAlignment="Center">Revert to this version</TextBlock>
+                    </Button>
                 </Grid>
             </TabItem>
             <TabItem Header="Settings">
