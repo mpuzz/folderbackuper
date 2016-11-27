@@ -90,7 +90,7 @@ namespace FolderBackup.ServerTests
 
             Assert.IsTrue(instructionList.Count == 1);
             Assert.IsTrue(instructionList[0].cmd == InstructionType.DELETE);
-            Assert.IsTrue(instructionList[0].op1 == @"ciao\tre.txt");
+            Assert.IsTrue(instructionList[0].src == @"ciao\tre.txt");
         }
 
         [TestMethod]
@@ -126,7 +126,7 @@ namespace FolderBackup.ServerTests
             
             Assert.IsTrue(instructionList.Count == 1);
             Assert.IsTrue(instructionList[0].cmd == InstructionType.COPY);
-            Assert.IsTrue(instructionList[0].op2 == @"ciao\tre.txt");
+            Assert.IsTrue(instructionList[0].dst == @"ciao\tre.txt");
         }
 
         [TestMethod]
@@ -165,7 +165,7 @@ namespace FolderBackup.ServerTests
 
             Assert.IsTrue(instructionList.Count == 1);
             Assert.IsTrue(instructionList[0].cmd == InstructionType.NEW);
-            Assert.IsTrue(instructionList[0].op2 == @"ciao\tre.txt");
+            Assert.IsTrue(instructionList[0].dst == @"ciao\tre.txt");
         }
 
         [TestCleanup]
