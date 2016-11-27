@@ -424,11 +424,16 @@ namespace FolderBackup.Server
 
             FBVersion actual = this.currentVersion();
 
-            FBVersion diff = old - actual;
+            return resetInternals(old, actual);
+        }
 
-            old.setAbsoluteNameToFile();
-            if(diff.root != null) diff.setAbsoluteNameToFile();
-            actual.setAbsoluteNameToFile();
+        private UploadData resetInternals(FBVersion newVersion, FBVersion current)
+        {
+            FBVersion diff = newVersion - current;
+
+            newVersion.setAbsoluteNameToFile();
+            if (diff.root != null) diff.setAbsoluteNameToFile();
+            current.setAbsoluteNameToFile();
 
             List<Instruction> instrucionList = new List<Instruction>();
 
@@ -437,11 +442,11 @@ namespace FolderBackup.Server
 
             ZipArchive zip = ZipFile.Open(user.rootDirectory.FullName + @"\tmp.zip", ZipArchiveMode.Update);
 
-            if(diff.fileList != null)
+            if (diff.fileList != null)
                 foreach (FBAbstractElement to in diff.fileList)
                 {
                     bool found = false;
-                    foreach (FBAbstractElement from in actual.fileList)
+                    foreach (FBAbstractElement from in current.fileList)
                     {
                         if (from.Equals(to))
                         {
@@ -467,7 +472,7 @@ namespace FolderBackup.Server
                     }
                 }
 
-            diff = actual - old;
+            diff = current - newVersion;
 
             if (diff.fileList != null)
             {
@@ -527,6 +532,13 @@ namespace FolderBackup.Server
 
             return new UploadData(UsefullMethods.GetLocalIPAddress(), secDown.port,
                 token);
+        }
+
+        public UploadData resetToCraftedVersion(SerializedVersion serV)
+        {
+            FBVersion newVersion = FBVersion.deserialize(serV.encodedVersion);
+            FBVersion current = this.currentVersion();
+            return this.resetInternals(newVersion, current);
         }
 
         ~Server()

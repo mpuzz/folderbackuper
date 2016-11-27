@@ -62,6 +62,10 @@ namespace FolderBackup.CommunicationProtocol
         [OperationContract(IsInitiating = false)]
         [FaultContract(typeof(ServiceErrorMessage))]
         UploadData getFile(SerializedVersion serV);
+
+        [OperationContract(IsInitiating = false)]
+        [FaultContract(typeof(ServiceErrorMessage))]
+        UploadData resetToCraftedVersion(SerializedVersion serV);
     }
 
     [DataContract]
