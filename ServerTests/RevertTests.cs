@@ -54,8 +54,7 @@ namespace FolderBackup.ServerTests
             UploadData credential = server.uploadFile();
             UsefullMethods.SendFile(credential.ip, credential.port, credential.token, fstream);
 
-            //Assert.AreEqual(server.uploadFile(fstream), file.hash);
-            //fstream.Close();
+            fstream.Close();
 
             file = (FBFile)new FBFileBuilder(@"asd\due.txt").generate();
             fstream = new FileStream(@"asd\due.txt", FileMode.Open, FileAccess.Read);
@@ -86,17 +85,12 @@ namespace FolderBackup.ServerTests
             UploadData ud = server.resetToPreviousVersion(1);
             UsefullMethods.ReceiveFile(ud.ip, ud.port, ud.token, @"asd\asd.zip");
 
-            ZipArchive zip = ZipFile.Open(@"asd\asd.zip", ZipArchiveMode.Update);
-            zip.ExtractToDirectory(@"asd\tmp");
-            zip.Dispose();
-            File.Delete(@"asd\asd.zip");
-            FileStream fstream = new FileStream(@"asd\tmp\instructions.bin", FileMode.Open, FileAccess.Read);
-            BinaryFormatter deserializer = new BinaryFormatter();
-            List<Instruction> instrucionList = (List<Instruction>) deserializer.Deserialize(fstream);
-            fstream.Close();
-            Assert.IsTrue(instrucionList.Count == 1);
-            Assert.IsTrue(instrucionList[0].cmd == InstructionType.DELETE);
-            Assert.IsTrue(instrucionList[0].op1 == @"ciao\tre.txt");
+            String ignore;
+            List<Instruction> instructionList = UsefullMethods.ExtractInstructions(@"asd\asd.zip", out ignore);
+
+            Assert.IsTrue(instructionList.Count == 1);
+            Assert.IsTrue(instructionList[0].cmd == InstructionType.DELETE);
+            Assert.IsTrue(instructionList[0].op1 == @"ciao\tre.txt");
         }
 
         [TestMethod]
@@ -127,17 +121,12 @@ namespace FolderBackup.ServerTests
             UploadData ud = server.resetToPreviousVersion(1);
             UsefullMethods.ReceiveFile(ud.ip, ud.port, ud.token, @"asd\asd.zip");
 
-            ZipArchive zip = ZipFile.Open(@"asd\asd.zip", ZipArchiveMode.Update);
-            zip.ExtractToDirectory(@"asd\tmp");
-            zip.Dispose();
-            File.Delete(@"asd\asd.zip");
-            FileStream fstream = new FileStream(@"asd\tmp\instructions.bin", FileMode.Open, FileAccess.Read);
-            BinaryFormatter deserializer = new BinaryFormatter();
-            List<Instruction> instrucionList = (List<Instruction>)deserializer.Deserialize(fstream);
-            fstream.Close();
-            Assert.IsTrue(instrucionList.Count == 1);
-            Assert.IsTrue(instrucionList[0].cmd == InstructionType.COPY);
-            Assert.IsTrue(instrucionList[0].op2 == @"ciao\tre.txt");
+            String ignore;
+            List<Instruction> instructionList = UsefullMethods.ExtractInstructions(@"asd\asd.zip", out ignore);
+            
+            Assert.IsTrue(instructionList.Count == 1);
+            Assert.IsTrue(instructionList[0].cmd == InstructionType.COPY);
+            Assert.IsTrue(instructionList[0].op2 == @"ciao\tre.txt");
         }
 
         [TestMethod]
@@ -171,17 +160,12 @@ namespace FolderBackup.ServerTests
             UploadData ud = server.resetToPreviousVersion(1);
             UsefullMethods.ReceiveFile(ud.ip, ud.port, ud.token, @"asd\asd.zip");
 
-            ZipArchive zip = ZipFile.Open(@"asd\asd.zip", ZipArchiveMode.Update);
-            zip.ExtractToDirectory(@"asd\tmp");
-            zip.Dispose();
-            File.Delete(@"asd\asd.zip");
-            fstream = new FileStream(@"asd\tmp\instructions.bin", FileMode.Open, FileAccess.Read);
-            BinaryFormatter deserializer = new BinaryFormatter();
-            List<Instruction> instrucionList = (List<Instruction>)deserializer.Deserialize(fstream);
-            fstream.Close();
-            Assert.IsTrue(instrucionList.Count == 1);
-            Assert.IsTrue(instrucionList[0].cmd == InstructionType.NEW);
-            Assert.IsTrue(instrucionList[0].op2 == @"ciao\tre.txt");
+            String ignore;
+            List<Instruction> instructionList = UsefullMethods.ExtractInstructions(@"asd\asd.zip", out ignore);
+
+            Assert.IsTrue(instructionList.Count == 1);
+            Assert.IsTrue(instructionList[0].cmd == InstructionType.NEW);
+            Assert.IsTrue(instructionList[0].op2 == @"ciao\tre.txt");
         }
 
         [TestCleanup]

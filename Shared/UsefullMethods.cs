@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Net.Security;
+using System.IO.Compression;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace FolderBackup.Shared
 {
@@ -171,6 +173,26 @@ namespace FolderBackup.Shared
             {
                 throw e;
             }
+        }
+
+        public static List<Instruction> ExtractInstructions(String path, out String extractedDirectory)
+        {
+            ZipArchive zip = ZipFile.Open(path, ZipArchiveMode.Update);
+            String tmpDir = Path.GetTempFileName();
+
+            File.Delete(tmpDir);
+            Directory.CreateDirectory(tmpDir);
+            zip.ExtractToDirectory(tmpDir);
+            zip.Dispose();
+            File.Delete(path);
+
+            FileStream fstream = new FileStream(tmpDir + @"\instructions.bin", FileMode.Open, FileAccess.Read);
+            BinaryFormatter deserializer = new BinaryFormatter();
+            List<Instruction> instrucionList = (List<Instruction>)deserializer.Deserialize(fstream);
+            fstream.Close();
+
+            extractedDirectory = tmpDir;
+            return instrucionList;
         }
     }
 }
