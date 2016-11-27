@@ -62,7 +62,7 @@ namespace FolderBackup.ServerTests
 
             credential = server.uploadFile();
             UsefullMethods.SendFile(credential.ip, credential.port, credential.token, fstream);
-            System.Threading.Thread.Sleep(1000);
+
             Assert.IsTrue(server.commit());
         }
 
@@ -120,7 +120,6 @@ namespace FolderBackup.ServerTests
             v = (FolderBackup.Shared.FBVersion)vb.generate();
             serV = new SerializedVersion(v.serialize());
 
-            System.Threading.Thread.Sleep(1000);
             server.newTransaction(serV);
 
             server.commit();
@@ -158,7 +157,6 @@ namespace FolderBackup.ServerTests
             server.getFilesToUpload();
             UploadData credential = server.uploadFile();
             UsefullMethods.SendFile(credential.ip, credential.port, credential.token, fstream);
-            System.Threading.Thread.Sleep(1000);
             server.commit();
 
             System.IO.File.Delete(@"asd\ciao\tre.txt");
@@ -166,7 +164,6 @@ namespace FolderBackup.ServerTests
             v = (FolderBackup.Shared.FBVersion)vb.generate();
             serV = new SerializedVersion(v.serialize());
 
-            System.Threading.Thread.Sleep(1000);
             server.newTransaction(serV);
 
             server.commit();

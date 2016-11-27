@@ -74,7 +74,6 @@ namespace FolderBackup.ServerTests
 
             credential = server.uploadFile();
             UsefullMethods.SendFile(credential.ip, credential.port, credential.token, fstream);
-            System.Threading.Thread.Sleep(1000);
         }
 
         [TestMethod]
