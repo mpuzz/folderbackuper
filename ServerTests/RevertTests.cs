@@ -141,6 +141,52 @@ namespace FolderBackup.ServerTests
             Assert.IsTrue(instrucionList[0].op2 == @"ciao\tre.txt");
         }
 
+        [TestMethod]
+        public void RevertWithNewFile()
+        {
+            this.TestInitialize();
+            string[] lines = { "First line", "Second line", "Third line", "Fourth line" };
+            System.IO.File.WriteAllLines(@"asd\ciao\tre.txt", lines);
+
+            FBVersionBuilder vb = new FBVersionBuilder(rinfo.FullName);
+            FolderBackup.Shared.FBVersion v = (FolderBackup.Shared.FBVersion)vb.generate();
+
+            SerializedVersion serV = new SerializedVersion(v.serialize());
+
+            server.newTransaction(serV);
+            FileStream fstream = new FileStream(@"asd\ciao\tre.txt", FileMode.Open, FileAccess.Read);
+            server.getFilesToUpload();
+            UploadData credential = server.uploadFile();
+            UsefullMethods.SendFile(credential.ip, credential.port, credential.token, fstream);
+            System.Threading.Thread.Sleep(1000);
+            server.commit();
+
+            System.IO.File.Delete(@"asd\ciao\tre.txt");
+            vb = new FBVersionBuilder(rinfo.FullName);
+            v = (FolderBackup.Shared.FBVersion)vb.generate();
+            serV = new SerializedVersion(v.serialize());
+
+            System.Threading.Thread.Sleep(1000);
+            server.newTransaction(serV);
+
+            server.commit();
+
+            UploadData ud = server.resetToPreviousVersion(1);
+            UsefullMethods.ReceiveFile(ud.ip, ud.port, ud.token, @"asd\asd.zip");
+
+            ZipArchive zip = ZipFile.Open(@"asd\asd.zip", ZipArchiveMode.Update);
+            zip.ExtractToDirectory(@"asd\tmp");
+            zip.Dispose();
+            File.Delete(@"asd\asd.zip");
+            fstream = new FileStream(@"asd\tmp\instructions.bin", FileMode.Open, FileAccess.Read);
+            BinaryFormatter deserializer = new BinaryFormatter();
+            List<Instruction> instrucionList = (List<Instruction>)deserializer.Deserialize(fstream);
+            fstream.Close();
+            Assert.IsTrue(instrucionList.Count == 1);
+            Assert.IsTrue(instrucionList[0].cmd == InstructionType.NEW);
+            Assert.IsTrue(instrucionList[0].op2 == @"ciao\tre.txt");
+        }
+
         [TestCleanup]
         public void CleanUp()
         {
