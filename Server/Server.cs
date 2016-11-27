@@ -17,10 +17,13 @@ namespace FolderBackup.Server
 {
     public delegate void NotifyErrorReceiving(string token);
     public delegate void NotifyReceiveComplete(FBFile file, PhysicFile pf);
+    
 
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Single, InstanceContextMode = InstanceContextMode.PerSession)]
     public class Server : IBackupService
     {
+        public static string directoryFormat = "yyyy_MM_dd__HH_mm_ss_fff";
+        public static string firstDirectory  = "1970_01_01__00_00_00_000";
         private List<SecureUploader> channels = new List<SecureUploader>();
 
         public ThreadSafeList<FBFile> necessaryFiles;
@@ -110,10 +113,10 @@ namespace FolderBackup.Server
                 serializer.Serialize(FilesStream, realFiles);
                 FilesStream.Close();
 
-                this.user.rootDirectory.CreateSubdirectory("1970_01_01__00_00_00");
-                FBVersionBuilder vb = new FBVersionBuilder(user.rootDirectory.FullName + @"\1970_01_01__00_00_00");
+                this.user.rootDirectory.CreateSubdirectory(firstDirectory);
+                FBVersionBuilder vb = new FBVersionBuilder(user.rootDirectory.FullName + @"\" + firstDirectory);
                 FBVersion v = (FBVersion)vb.generate();
-                FilesStream = File.OpenWrite(this.user.rootDirectory.FullName + @"\1970_01_01__00_00_00\version.bin");
+                FilesStream = File.OpenWrite(this.user.rootDirectory.FullName + @"\" + firstDirectory + @"\version.bin");
                 serializer.Serialize(FilesStream, v);
                 FilesStream.Close();
             }
@@ -186,7 +189,7 @@ namespace FolderBackup.Server
 
             if (versionDirs.Length == 0)
             {
-                Directory.CreateDirectory(user.rootDirectory.FullName + @"\1970_01_01__00_00_00");
+                Directory.CreateDirectory(user.rootDirectory.FullName + @"\" + firstDirectory);
                 versionDirs = user.rootDirectory.GetDirectories();
             }
 
@@ -196,8 +199,8 @@ namespace FolderBackup.Server
             {
                 if (last.Equals(di)) continue;
 
-                DateTime dtl = DateTime.ParseExact(last.Name, "yyyy_MM_dd__HH_mm_ss", CultureInfo.InvariantCulture);
-                DateTime dt2 = DateTime.ParseExact(di.Name, "yyyy_MM_dd__HH_mm_ss", CultureInfo.InvariantCulture);
+                DateTime dtl = DateTime.ParseExact(last.Name, directoryFormat, CultureInfo.InvariantCulture);
+                DateTime dt2 = DateTime.ParseExact(di.Name, directoryFormat, CultureInfo.InvariantCulture);
                 if (dt2 > dtl) last = di;
             }
 
@@ -247,7 +250,7 @@ namespace FolderBackup.Server
             this.inSyncVersion = vers;
 
             String newDirPath = this.user.rootDirectory.FullName;
-            newDirPath += "\\" + this.inSyncVersion.timestamp.ToString("yyyy_MM_dd__HH_mm_ss", CultureInfo.InvariantCulture);
+            newDirPath += "\\" + this.inSyncVersion.timestamp.ToString(directoryFormat, CultureInfo.InvariantCulture);
             this.transactDir = Directory.CreateDirectory(newDirPath);
             if (this.transactDir == null)
                 throw new FaultException<ServiceErrorMessage>(new ServiceErrorMessage(ServiceErrorMessage.CREATEVERSIONDIRECTORYFAILED));
@@ -362,7 +365,7 @@ namespace FolderBackup.Server
 
             if (versionDirs.Length == 0)
             {
-                Directory.CreateDirectory(user.rootDirectory.FullName + @"\1970_01_01__00_00_00");
+                Directory.CreateDirectory(user.rootDirectory.FullName + @"\" + firstDirectory);
                 versionDirs = user.rootDirectory.GetDirectories();
             }
 
@@ -386,7 +389,7 @@ namespace FolderBackup.Server
             int i = 0;
             foreach (FBVersion ver in versions)
             {
-                if (ver.root.Name.Contains("1970_01_01__00_00_00")
+                if (ver.root.Name.Contains(firstDirectory)
                     && ver.fileList.Count == 0)
                     continue;
 
