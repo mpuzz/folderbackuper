@@ -10,12 +10,12 @@ namespace ClientTest
     public class ConfigurationTestCreateFile
     {
         String fileName = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"/FolderBackuper/config.conf";
-        private void clean()
+        [TestCleanup]
+        public void clean()
         {
             if (File.Exists(fileName))
             {
                 File.Delete(fileName);
-                Directory.Delete(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + @"/FolderBackuper/");
             }
 
         }
@@ -44,7 +44,6 @@ namespace ClientTest
             Config instance = (Config)deserializer.Deserialize(br);
             Assert.AreEqual(instance.userName.get(),"pluto");
             br.Close();
-            clean();
         }
 
     }
