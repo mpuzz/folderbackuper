@@ -59,7 +59,7 @@ namespace ClientTest
         [TestMethod]
         public void ControlViewTest()
         {
-            ControlView cv = new ControlView();
+            ControlView cv = ControlView.Instance();
             cv.Show();
             cv.Activate();
             CleanUp();

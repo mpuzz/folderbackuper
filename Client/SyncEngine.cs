@@ -225,6 +225,97 @@ namespace FolderBackup.Client
             return tmpPath;
 
         }
+        public void resetPrevoiusVersion(int vIndex, FBVersion v)
+        {
+            UploadData ud = server.resetToPreviousVersion(vIndex);
+            resetVersion(ud,v);
+        }
+        public void resetToVersion(FBVersion v)
+        {
+            SerializedVersion serV = new SerializedVersion();
+            serV.encodedVersion = v.serialize();
+            UploadData ud = server.resetToCraftedVersion(serV);
+            resetVersion(ud, v);
+        }
+        private void resetVersion(UploadData ud,FBVersion v)
+        {
+            string filename = Path.GetTempFileName();
+            UsefullMethods.ReceiveFile(ud.ip, ud.port, ud.token, filename);
 
+            String pathFiles;
+            List<Instruction> instructionList = UsefullMethods.ExtractInstructions(filename, out pathFiles);
+
+            foreach (Instruction i in instructionList)
+            {
+                ExecuteInstruction(i, pathFiles);
+            }
+            CleanUpDir(v.root,"");
+            StartSync();
+
+        }
+
+        private void ExecuteInstruction(Instruction i,String path)
+        {
+            string dirPath = conf.targetPath.get();
+            string dstPath;
+            switch (i.cmd){
+                case InstructionType.COPY:
+                    dstPath = dirPath + "\\" + Path.GetDirectoryName(i.dst);
+                    if (!Directory.Exists(dstPath))
+                    {
+                        Directory.CreateDirectory(dstPath);
+                    }
+                    File.Copy(dirPath + "\\" + i.src, dirPath + "\\" + i.dst);
+                    break;
+                case InstructionType.DELETE:
+                    File.Delete(dirPath + "\\" +i.src);
+                    break;
+                case InstructionType.NEW:
+                    dstPath = dirPath + "\\" + Path.GetDirectoryName(i.dst);
+                    if (!Directory.Exists(dstPath))
+                    {
+                        Directory.CreateDirectory(dstPath);
+                    }
+                    File.Copy(path + "\\" + i.src, dirPath + "\\" + i.dst);
+
+                    break;
+                default:
+                    throw new Exception("Wrong instruction type");
+            }
+        }
+
+        private void CleanUpDir(FBDirectory dir,string relPath)
+        {
+            string targetPath = conf.targetPath.get();
+            string[] dirs = Directory.GetDirectories(targetPath +"\\"+ relPath);
+            List<string> realdirs = new List<string>();
+            List<string> versdirs = new List<string>();
+
+            foreach (string d in dirs)
+            {
+                realdirs.Add(Path.GetFileName(d));
+            }
+            foreach (FBAbstractElement el in dir.content.Values)
+            {
+                if (el.GetType() == typeof(FBDirectory))
+                {
+                    if (!realdirs.Contains( el.Name ))
+                    {
+                        Directory.CreateDirectory(targetPath+"\\"+relPath+"\\"+el.Name);
+                    }
+
+                    CleanUpDir((FBDirectory)el, relPath + "\\" + el.Name);
+                    versdirs.Add(el.Name);
+                }
+            }
+            foreach(string d in realdirs)
+            {
+                if (!versdirs.Contains(d))
+                {
+                    Directory.Delete(targetPath + "\\" + relPath + "\\" + d,true);
+                }
+            }
+        }
+        
     }
 }

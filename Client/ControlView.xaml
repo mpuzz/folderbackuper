@@ -8,7 +8,7 @@
         Title="ControlView" Height="467" Width="919" Closing="Window_Closing">
     <Grid>
 
-        <TabControl x:Name="tabControl" Margin="0,0,6,41">
+        <TabControl x:Name="tabControl" Margin="6,0,6,41">
             <TabItem Header="Verisons">
                 <Grid Background="#FFFFFF" Margin="0,0,0,2">
                     <Grid.ColumnDefinitions>
@@ -31,7 +31,8 @@
                     </ListBox>
                     <Button x:Name="sync" Content="Start Sync" Grid.Column="2" Margin="16,30,16,0" VerticalAlignment="Top" Click="sync_Click" Background="White"/>
                     <Button x:Name="preview" Content="Preview" Grid.Column="2" Margin="16,60,16,0" VerticalAlignment="Top" Click="preview_Click" Background="White"/>
-                    <Button x:Name="revertFiles" Content="Revert" Grid.Column="2" Margin="15,90,17,0" VerticalAlignment="Top" Click="revert_Click" Background="White"/>
+                    <Button x:Name="revertFiles" Content="Revert Files" Grid.Column="2" Margin="15,90,17,0" VerticalAlignment="Top" Click="revert_Click" Background="White"/>
+                    <Button x:Name="revertVersion" Content="Revert to this version" Grid.Column="2" Margin="15,120,17,0" VerticalAlignment="Top" Click="RevertToVersion_Click" Background="White"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Settings">
@@ -40,7 +41,7 @@
                 </Grid>
             </TabItem>
         </TabControl>
-        <Label x:Name="errorBox" Content="" Background="White" FontSize="12" Foreground="#FFCC0000" FontFamily="Calibri" BorderThickness="1" Margin="0,0,6,5" Height="31" VerticalAlignment="Bottom"/>
+        <Label x:Name="errorBox" Content="" Background="White" FontSize="12" Foreground="#FFCC0000" FontFamily="Calibri" BorderThickness="1" Margin="6,0,6,5" Height="31" VerticalAlignment="Bottom"/>
 
     </Grid>
 </Window>

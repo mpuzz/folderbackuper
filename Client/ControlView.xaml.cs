@@ -39,7 +39,21 @@ namespace FolderBackup.Client
             public FBVersion version;
             public string relativePath;
 
-
+            public bool Select
+            {
+                set
+                {
+                    if (value)
+                    {
+                        Color c = (Color)ColorConverter.ConvertFromString("#FFCFE581");
+                        this.Background = new SolidColorBrush(c);
+                    }else
+                    {
+                        Color c = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");
+                        this.Background = new SolidColorBrush(c);
+                    }
+                }
+            }
             public bool Equals(TreeViewItemFat other)
             {
                 return (this.item.Name.Equals(other.item.Name) && this.relativePath.Equals(other.relativePath));
@@ -246,6 +260,10 @@ namespace FolderBackup.Client
                     ti.version = selectedVersion;
                     ti.item = root.content[key];
                     ti.relativePath = path;
+                    if (findItem(revertList.Items, ti)!=null)
+                    {
+                        ti.Select = true;
+                    }
                     treeItem.Items.Add(ti);
 
                 }
@@ -290,47 +308,148 @@ namespace FolderBackup.Client
             System.Diagnostics.Process.Start(filePath);
         }
 
-        private async void VersionView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private async void flashItem(TreeViewItemFat item)
+        {
+            Brush pc = item.Background;
+            Color c = (Color)ColorConverter.ConvertFromString("#FFB13D14");
+            item.Background = new SolidColorBrush(c);
+            await Task.Delay(700);
+            item.Background = pc;
+        }
+        private TreeViewItemFat findItem(ItemCollection view,TreeViewItemFat item)
+        {
+            TreeViewItemFat ret = null;
+            
+            foreach (TreeViewItemFat el in view)
+            {
+                if (el.item != null)
+                {
+                    if (el.item.GetType() == typeof(FBDirectory))
+                    {
+                        ret = findItem(el.Items, item);
+                        if (ret != null)
+                        {
+                            return ret;
+                        }
+                    }
+                    if (el.Equals(item))
+                    {
+                        return el;
+                    }
+                }
+                
+            }
+            return null;
+        }
+        private TreeViewItemFat addItemInRevertList(TreeViewItemFat item)
+        {
+            TreeViewItemFat ret = null;
+            if (item.item.GetType() == typeof(FBDirectory))
+            {
+                foreach (TreeViewItemFat i in item.Items)
+                {
+                    addItemInRevertList(i);
+                }
+            }
+            else
+            {
+                TreeViewItemFat el = findItem(revertList.Items, item);
+                if (el != null)
+                {
+                    UsefullMethods.setLabelAlert("danger", errorBox, "File is already in the revert list");
+                    flashItem(el);
+                }else
+                {
+                    ret = item.Duplicate();
+                    revertList.Items.Add(ret);
+                    item.Select = true;
+                }
+            }
+            return ret;
+        }
+        private  void VersionView_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             TreeViewItemFat selectedItem = (TreeViewItemFat)((TreeView)sender).SelectedItem;
             if (selectedItem != null && selectedItem.item != null)
             {
                 if (sender == versionView)
                 {
-                    Console.WriteLine(getPathTreeItem(selectedItem));
-                    bool isIn = false;
-                    foreach (TreeViewItemFat el in revertList.Items)
-                    {
-                        bool tmp = el.Equals(selectedItem);
-                        isIn |= tmp;
-                        if (tmp)
-                        {
-                            Brush pc = el.Background;
-                            Color c = (Color)ColorConverter.ConvertFromString("#FFB13D14");
-                            el.Background = new SolidColorBrush(c);
-                            UsefullMethods.setLabelAlert("danger", errorBox, "File is already in the revert list");
-                            await Task.Delay(700);
-                            el.Background = pc;
-                        }
-                    }
-                    if (!isIn)
-                    {
-                        revertList.Items.Add(selectedItem.Duplicate());
-                    }
+                    addItemInRevertList(selectedItem);
                 }
                 else
                 {
                     revertList.Items.Remove(selectedItem);
+                    TreeViewItemFat el = findItem(versionView.Items,selectedItem);
+                    el.Select = false;
                 }
 
             }
         }
         private void revert_Click(object sender, RoutedEventArgs e)
         {
-            FBVersion lastVers = this.versions[versions.Length - 1];
-
-
+            FBVersion lastVers = (FBVersion) this.versions[versions.Length - 1].Clone();
+            FBDirectory dir = lastVers.root;
+            Dictionary<string, List<TreeViewItemFat>> revertItems = new Dictionary<string, List<TreeViewItemFat>>();
+            foreach (TreeViewItemFat el in revertList.Items)
+            {
+                if (!revertItems.ContainsKey(el.relativePath))
+                {
+                    revertItems[el.relativePath] = new List<TreeViewItemFat>();
+                }
+                revertItems[el.relativePath].Add(el);                
+            }
+            modifyDir(revertItems, dir, dir.Name);
+            se.resetToVersion(lastVers);
+            revertList.Items.Clear();
         }
+        private void RevertToVersion_Click(object sender, RoutedEventArgs e)
+        {
+            int vIndex = 0;
+            for (; vIndex < versions.Length; vIndex++)
+            {
+                if (versions[versions.Length - vIndex-1] == selectedVersion) break;
+            }
+            se.resetPrevoiusVersion(vIndex,versions[versions.Length - vIndex - 1]);
+        }
+        private void modifyDir(Dictionary<string, List<TreeViewItemFat>> revertItems, FBDirectory dir, string relPath)
+        {
+            // recursion inside the existing directories
+            foreach (FBAbstractElement el in dir.content.Values)
+            {
+                if (el.GetType() == typeof(FBDirectory))
+                {
+                    modifyDir(revertItems, (FBDirectory)el, relPath+"\\"+el.Name);
+                }
+            }
+            //add new directory if necessary
+            foreach (string key in revertItems.Keys)
+            {
+                if (key.Contains(relPath+"\\"))
+                {
+                    string newDirName = key.Substring((relPath + "\\").Length);
+                    newDirName = newDirName.Split('\\')[0];
+                    if (!dir.content.ContainsKey(newDirName)) {
+                        dir.addContent(new FBDirectory(newDirName));
+                        modifyDir(revertItems, (FBDirectory)dir.content[newDirName], relPath + "\\" + newDirName);
+                    }
+                }
+            }
+            //adding or replacing files in the directory
+            if (revertItems.ContainsKey(relPath))
+            {
+                foreach (TreeViewItemFat tv in revertItems[relPath])
+                {
+                    if (dir.content.ContainsKey(tv.Name))
+                    {
+                        dir.content.Remove(tv.Name);
+                    }
+                    dir.addContent(tv.item);
+
+                }
+            }
+            //revertItems.Remove(relPath);
+        }
+        
     }
 }
 

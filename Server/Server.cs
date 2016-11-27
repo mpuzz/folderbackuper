@@ -462,7 +462,7 @@ namespace FolderBackup.Server
                         {
                             if (ph.getFBFile().Equals(to))
                             {
-                                if (zip.GetEntry(ph.getRealFileInfo().Name) != null)
+                                if (zip.GetEntry(ph.getRealFileInfo().Name) == null)
                                 {
                                     zip.CreateEntryFromFile(ph.getRealFileInfo().FullName, ph.getRealFileInfo().Name, CompressionLevel.Optimal);
                                 }
