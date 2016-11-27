@@ -299,6 +299,13 @@ public interface IBackupService
     
     [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/getFile", ReplyAction="http://tempuri.org/IBackupService/getFileResponse")]
     System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.UploadData> getFileAsync(FolderBackup.CommunicationProtocol.SerializedVersion serV);
+    
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/resetToCraftedVersion", ReplyAction="http://tempuri.org/IBackupService/resetToCraftedVersionResponse")]
+    [System.ServiceModel.FaultContractAttribute(typeof(FolderBackup.CommunicationProtocol.ServiceErrorMessage), Action="http://tempuri.org/IBackupService/resetToCraftedVersionServiceErrorMessageFault", Name="ServiceErrorMessage", Namespace="http://schemas.datacontract.org/2004/07/FolderBackup.CommunicationProtocol")]
+    FolderBackup.CommunicationProtocol.UploadData resetToCraftedVersion(FolderBackup.CommunicationProtocol.SerializedVersion serV);
+    
+    [System.ServiceModel.OperationContractAttribute(IsInitiating=false, Action="http://tempuri.org/IBackupService/resetToCraftedVersion", ReplyAction="http://tempuri.org/IBackupService/resetToCraftedVersionResponse")]
+    System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.UploadData> resetToCraftedVersionAsync(FolderBackup.CommunicationProtocol.SerializedVersion serV);
 }
 
 [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "4.0.0.0")]
@@ -463,5 +470,15 @@ public partial class BackupServiceClient : System.ServiceModel.ClientBase<IBacku
     public System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.UploadData> getFileAsync(FolderBackup.CommunicationProtocol.SerializedVersion serV)
     {
         return base.Channel.getFileAsync(serV);
+    }
+    
+    public FolderBackup.CommunicationProtocol.UploadData resetToCraftedVersion(FolderBackup.CommunicationProtocol.SerializedVersion serV)
+    {
+        return base.Channel.resetToCraftedVersion(serV);
+    }
+    
+    public System.Threading.Tasks.Task<FolderBackup.CommunicationProtocol.UploadData> resetToCraftedVersionAsync(FolderBackup.CommunicationProtocol.SerializedVersion serV)
+    {
+        return base.Channel.resetToCraftedVersionAsync(serV);
     }
 }
