@@ -88,5 +88,10 @@ namespace FolderBackup.Server
         }
 
         protected abstract void ServeRequest(Stream fileStream);
+
+        public void join()
+        {
+            this.thread.Join();
+        }
     }
 }

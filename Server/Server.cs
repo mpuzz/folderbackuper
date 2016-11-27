@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.ServiceModel;
@@ -16,7 +17,7 @@ using System.IO.Compression;
 namespace FolderBackup.Server
 {
     public delegate void NotifyErrorReceiving(string token);
-    public delegate void NotifyReceiveComplete(FBFile file, PhysicFile pf);
+    public delegate void NotifyReceiveComplete(FBFile file, PhysicFile pf, string token);
     
 
     [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Single, InstanceContextMode = InstanceContextMode.PerSession)]
@@ -24,7 +25,7 @@ namespace FolderBackup.Server
     {
         public static string directoryFormat = "yyyy_MM_dd__HH_mm_ss_fff";
         public static string firstDirectory  = "1970_01_01__00_00_00_000";
-        private List<SecureUploader> channels = new List<SecureUploader>();
+        private ConcurrentDictionary<String, SecureChannel> channels = new ConcurrentDictionary<string, SecureChannel>();
 
         public ThreadSafeList<FBFile> necessaryFiles;
         private PhysicFilesList realFiles;
@@ -269,6 +270,11 @@ namespace FolderBackup.Server
             FBVersion actualVersion = (FBVersion)fvb.generate();
             actualVersion.timestamp = inSyncVersion.timestamp;
 
+            foreach(KeyValuePair<String, SecureChannel> pair in channels)
+            {
+                pair.Value.join();
+            }
+
             if (this.necessaryFiles.Count == 0)
             {
                 Stream FileStream = File.Create(this.transactDir.FullName + @"\version.bin");
@@ -316,16 +322,19 @@ namespace FolderBackup.Server
             return true;
         }
 
-        public void ManageCompleteUpload(FBFile f, PhysicFile pf)
+        public void ManageCompleteUpload(FBFile f, PhysicFile pf, string token)
         {
             this.uploadedFiles.add(pf);
 
             this.necessaryFiles.Remove(f);
+            SecureChannel chan;
+            this.channels.TryRemove(token, out chan);
         }
 
         public void ManageFailedUpload(string token)
         {
-
+            SecureChannel chan;
+            this.channels.TryRemove(token, out chan);
         }
 
         public UploadData uploadFile()
@@ -340,7 +349,7 @@ namespace FolderBackup.Server
             string token = Server.GetUniqueKey(20);
             SecureUploader channel = new SecureUploader(this, token, this.ManageCompleteUpload, this.ManageFailedUpload);
             UInt16 port = channel.port;
-            this.channels.Add(channel);
+            this.channels.TryAdd(token, channel);
 
             return new UploadData(UsefullMethods.GetLocalIPAddress(), port, token);
         }

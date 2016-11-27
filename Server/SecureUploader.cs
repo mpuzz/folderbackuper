@@ -65,7 +65,7 @@ namespace FolderBackup.Server
                 return;
             }
 
-            this.completeEvent(newFile, new PhysicFile(newFile, path));
+            this.completeEvent(newFile, new PhysicFile(newFile, path), token);
         }
     }
 }
