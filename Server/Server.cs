@@ -204,9 +204,15 @@ namespace FolderBackup.Server
                 DateTime dt2 = DateTime.ParseExact(di.Name, directoryFormat, CultureInfo.InvariantCulture);
                 if (dt2 > dtl) last = di;
             }
-
-            Stream TestFileStream = File.OpenRead(last.FullName + @"\version.bin");
-            BinaryFormatter deserializer = new BinaryFormatter();
+            Stream TestFileStream = null;
+            try { 
+                TestFileStream = File.OpenRead(last.FullName + @"\version.bin");
+            }catch(FileNotFoundException )
+            {
+                Directory.Delete(last.FullName);
+                return currentVersion();
+            }
+              BinaryFormatter deserializer = new BinaryFormatter();
             FBVersion version = (FBVersion)deserializer.Deserialize(TestFileStream);
             TestFileStream.Close();
 
@@ -386,7 +392,16 @@ namespace FolderBackup.Server
 
             foreach (DirectoryInfo di in versionDirs)
             {
-                Stream TestFileStream = File.OpenRead(di.FullName + @"\version.bin");
+                Stream TestFileStream = null;
+                try
+                {
+                    TestFileStream = File.OpenRead(di.FullName + @"\version.bin");
+                }
+                catch(FileNotFoundException )
+                {
+                    Directory.Delete(di.FullName);
+                    continue;
+                }
                 BinaryFormatter deserializer = new BinaryFormatter();
                 FBVersion version = (FBVersion)deserializer.Deserialize(TestFileStream);
                 versions.AddLast(version);

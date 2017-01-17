@@ -241,11 +241,13 @@ namespace FolderBackup.Client
         }
         public void resetPrevoiusVersion(int vIndex, FBVersion v)
         {
+            this.sync();
             UploadData ud = server.resetToPreviousVersion(vIndex);
             resetVersion(ud,v);
         }
         public void resetToVersion(FBVersion v)
         {
+            this.sync();
             SerializedVersion serV = new SerializedVersion();
             serV.encodedVersion = v.serialize();
             UploadData ud = server.resetToCraftedVersion(serV);
