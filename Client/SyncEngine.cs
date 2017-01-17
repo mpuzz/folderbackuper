@@ -11,6 +11,7 @@ using System.Net.Security;
 using FolderBackup.Client;
 using System.Threading;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace FolderBackup.Client
 {
@@ -110,7 +111,8 @@ namespace FolderBackup.Client
         public ThreadStatus threadCallback;
         private void sync()
         {
-            cv = (FBVersion)vb.generate();
+                cv = (FBVersion)vb.generate();
+            
             String dirPath = conf.targetPath.get();
             if (dirPath == null || !Directory.Exists(dirPath))
             {
@@ -119,59 +121,71 @@ namespace FolderBackup.Client
             SerializedVersion serV = new SerializedVersion();
             serV.encodedVersion = cv.serialize();
             threadCallback.Invoke(TypeThread.SYNC, StatusCode.WORKING, "Start syncing");
-
-            if (server.newTransaction(serV))
-            {
-                this.status = "Syncing";
-                byte[][] bfiles = server.getFilesToUpload();
-                List<FBFile> fileToSync = new List<FBFile>();
-                foreach (byte[] bf in bfiles)
+            try { 
+                if (server.newTransaction(serV))
                 {
-                    fileToSync.Add(FBFile.deserialize(bf));
-                }
-
-                int i = 0;
-                try
-                {
-                    foreach (FBFile f in fileToSync)
+                    this.status = "Syncing";
+                    byte[][] bfiles = server.getFilesToUpload();
+                    List<FBFile> fileToSync = new List<FBFile>();
+                    foreach (byte[] bf in bfiles)
                     {
+                        fileToSync.Add(FBFile.deserialize(bf));
+                    }
+
+                    int i = 0;
+                    FileStream fs=null;
+                    try
+                    {
+                        foreach (FBFile f in fileToSync)
+                        {
+                            if (!this.stopSync)
+                            {
+                                threadCallback.Invoke(TypeThread.SYNC, StatusCode.WORKING, "Syncing file "+i+" of " + fileToSync.Count);
+                                i++;
+                                FBFileClient cf = FBFileClient.generate(f);
+                                UploadData cedential = server.uploadFile();
+                                fs = new FileStream(cf.FullName, FileMode.Open);
+                                UsefullMethods.SendFile(cedential.ip,cedential.port,cedential.token,fs);
+                                fs = null;
+                            }else {
+                                break;
+                            }
+                        }
                         if (!this.stopSync)
                         {
-                            threadCallback.Invoke(TypeThread.SYNC, StatusCode.WORKING, "Syncing file "+i+" of " + fileToSync.Count);
-                            i++;
-                            FBFileClient cf = FBFileClient.generate(f);
-                            UploadData cedential = server.uploadFile();
-                            UsefullMethods.SendFile(cedential.ip,cedential.port,cedential.token, new FileStream(cf.FullName, FileMode.Open));
-                        }else {
-                            break;
+                            server.commit();
+                            threadCallback.Invoke(TypeThread.SYNC, StatusCode.SUCCESS, "Sync completed");
+
+                        }
+                        else
+                        {
+                            threadCallback.Invoke(TypeThread.SYNC, StatusCode.ABORTED, "Syncing Stopped");
+                            server.rollback();
+
                         }
                     }
-                    if (!this.stopSync)
+                    catch
                     {
-                        server.commit();
-                        threadCallback.Invoke(TypeThread.SYNC, StatusCode.SUCCESS, "Sync completed");
-
-                    }
-                    else
-                    {
-                        threadCallback.Invoke(TypeThread.SYNC, StatusCode.ABORTED, "Syncing Stopped");
+                        if (fs!=null)
+                        {
+                            fs.Close();
+                        }
                         server.rollback();
-
                     }
-                }
-                catch
-                {
-                    server.rollback();
-                }
                     
                 
-                this.status = "Idle";
+                    this.status = "Idle";
                 
-            }else
-            {
-                threadCallback.Invoke(TypeThread.SYNC, StatusCode.IDLE, "Nothing to be done");
+                }else
+                {
+                    threadCallback.Invoke(TypeThread.SYNC, StatusCode.IDLE, "Nothing to be done");
+                }
             }
-
+            catch (System.ServiceModel.CommunicationException e)
+            {
+                MessageBox.Show("There is a problem with connection, please retry to login!", "Error in connection" );
+                threadCallback.Invoke(TypeThread.SYNC, StatusCode.ABORTED, "Connection error");
+            }
         }
 
         private void SendFile(UploadData credential, FileStream fstream)

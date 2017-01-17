@@ -86,7 +86,7 @@ namespace FolderBackup.Shared
 
         public static void setLabelAlert(string type, Label el, string text)
         {
-            if (type == "success")
+            if (type.Equals("success"))
             {   
                 el.Content = text;
                 Color c = (Color)ColorConverter.ConvertFromString("#FFdff0d8");
@@ -96,7 +96,7 @@ namespace FolderBackup.Shared
                 c = (Color)ColorConverter.ConvertFromString("#FF3c763d");
                 el.Foreground = new SolidColorBrush(c);
             }
-            else if (type == "danger")
+            else if (type.Equals("danger"))
             {
                 el.Content = text;
                 Color c = (Color)ColorConverter.ConvertFromString("#FFF2DeDe");
@@ -106,7 +106,7 @@ namespace FolderBackup.Shared
                 c = (Color)ColorConverter.ConvertFromString("#FFa94442");
                 el.Foreground = new SolidColorBrush(c);
             }
-            else if (type == "none")
+            else if (type.Equals("none"))
             {
                 el.Content = text;
                 Color c = (Color)ColorConverter.ConvertFromString("#FFFFFFFF");

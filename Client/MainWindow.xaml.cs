@@ -41,7 +41,7 @@ namespace FolderBackup.Client
             this.usernameTxtBox.Text="";
             this.paswordTxtBox.Password="";
         }
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
             string username = this.usernameTxtBox.Text;
             string password = this.paswordTxtBox.Password;
@@ -74,7 +74,7 @@ namespace FolderBackup.Client
                 Const<BackupServiceClient>.Instance().set(server);
                 UsefullMethods.setLabelAlert("success", this.errorBox, "Log in succeed!");
                 conf.userName.set(this.usernameTxtBox.Text);
-                Thread.Sleep(500);
+                await Task.Delay(500);
                 this.Hide();
                 string targetPath = conf.targetPath.get();
                 // if the path is not setted a windows for selecting the path must be shown

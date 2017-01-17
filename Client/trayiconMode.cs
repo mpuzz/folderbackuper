@@ -89,6 +89,7 @@ namespace FolderBackup.Client
             if (instance == null)
             {
                 instance = new TrayiconMode();
+                instance.se.StartSync();
             }
             return instance;
         }

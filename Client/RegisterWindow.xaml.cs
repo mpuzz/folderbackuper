@@ -28,10 +28,11 @@ namespace FolderBackup.Client
             InitializeComponent();
         }
 
-        private void RegisterButton_Click(object sender, RoutedEventArgs e)
+        private async void RegisterButton_Click(object sender, RoutedEventArgs e)
         {
             string username = this.usernameTxtBox.Text;
             string password = this.passwordTxtBox.Password;
+            Config conf = Config.Instance();
 
             if (username.Equals(""))
             {
@@ -53,25 +54,29 @@ namespace FolderBackup.Client
             }
             catch
             {
-                UsefullMethods.setLabelAlert("danger", this.errorBox, "No internet connection!Check it and retry");
+                UsefullMethods.setLabelAlert("danger", this.errorBox, "No internet connection! Check it and retry");
                 return;
             }
             if (salt == null)
             {
                 UsefullMethods.setLabelAlert("danger", this.errorBox, "Username already choosen! Try another!");
                 return;
-                
+
             }
             if (server.registerStep2(username, AuthenticationPrimitives.hashPassword(password, salt), salt))
             {
-                UsefullMethods.setLabelAlert("danger", this.errorBox, "Registration succeed. You can log in now.");
-                Thread.Sleep(500);
+
+                conf.targetPath.set(null);
+                conf.userName.set(username);
+                UsefullMethods.setLabelAlert("success", this.errorBox, "Registration succeed. You can log in now.");
+                await Task.Delay(500);
                 this.Hide();
                 this.parent.Activate();
                 this.parent.Show();
             }
             else
             {
+
                 UsefullMethods.setLabelAlert("danger", this.errorBox, "Registration procedure failed!");
             }
         }

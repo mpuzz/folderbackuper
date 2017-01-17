@@ -19,8 +19,10 @@ namespace FolderBackup.Shared
 
             foreach (DirectoryInfo dir in dinfo.GetDirectories())
             {
-                FBDirectoryBuilder db = new FBDirectoryBuilder(dir.FullName);
-                newDir.addContent(db.generate());
+                if ((dir.Attributes & FileAttributes.Hidden) != FileAttributes.Hidden) {
+                    FBDirectoryBuilder db = new FBDirectoryBuilder(dir.FullName);
+                    newDir.addContent(db.generate());
+                }
             }
 
             foreach (FileInfo fil in dinfo.GetFiles())

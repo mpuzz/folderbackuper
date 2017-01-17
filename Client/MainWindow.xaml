@@ -7,16 +7,27 @@
     </Window.Resources>
     <Border Background="#FFFFFF" Margin="0" RenderTransformOrigin="0.5,0.5" >
         <Grid Height="250" VerticalAlignment="Top" Margin="0,0,0,-3">
+            <Image x:Name="applicationIcon_png" Margin="0,0,17,10" Source="applicationIcon.png" Stretch="Fill" RenderTransformOrigin="0.5,0.5" Height="137" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="137" Opacity="0.5">
+                <Image.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform/>
+                        <SkewTransform/>
+                        <RotateTransform Angle="-30"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Image.RenderTransform>
+            </Image>
+
             <Label Content="FolderBackup" VerticalAlignment="Center" FontFamily="Calibri" FontSize="21" Height="38" Margin="52,14,184,198"/>
-            <TextBox x:Name="usernameTxtBox" Height="23" VerticalAlignment="Bottom" TextWrapping="Wrap" Margin="162,0,53,166"/>
-            <PasswordBox x:Name="paswordTxtBox" VerticalAlignment="Bottom" Height="23" Margin="162,0,53,134"/>
-            <Button Content="Connect" VerticalAlignment="Bottom" Click="Button_Click" FontFamily="Calibri" FontSize="16" Background="White" Margin="82,0,0,61" HorizontalAlignment="Left" Width="75"/>
-            <Button Content="Clear" HorizontalAlignment="Right" Click="Clear_Click" VerticalAlignment="Bottom" Width="75" FontFamily="Calibri" FontSize="16" Background="White" Margin="0,0,70,61"/>
-            <Label x:Name="registerLabel" Content="Not yet registered? Sign up!" VerticalAlignment="Bottom" Height="27" MouseEnter="Label_MouseEnter" MouseLeave="registerLabel_MouseLeave" MouseLeftButtonDown="registerLabel_MouseLeftButtonDown" FontFamily="Calibri" Margin="110,0,110,23"/>
+            <TextBox x:Name="usernameTxtBox" Height="23" VerticalAlignment="Bottom" TextWrapping="Wrap" Margin="162,0,53,166" BorderBrush="#7FABADB3"/>
+            <PasswordBox x:Name="paswordTxtBox" VerticalAlignment="Bottom" Height="23" Margin="162,0,53,134" BorderBrush="#7FABADB3"/>
+            <Button Content="Connect" VerticalAlignment="Bottom" Click="Button_Click" FontFamily="Calibri" FontSize="16" Background="{x:Null}" Margin="82,0,0,61" BorderBrush="#7F707070" HorizontalAlignment="Left" Width="75"/>
+            <Button Content="Clear" HorizontalAlignment="Right" Click="Clear_Click" VerticalAlignment="Bottom" Width="75" FontFamily="Calibri" FontSize="16" Background="#7FFFFFFF" Margin="0,0,70,61" BorderBrush="#7F707070"/>
+            <Label x:Name="registerLabel" Content="Not yet registered? Sign up!" VerticalAlignment="Bottom" Height="27" MouseEnter="Label_MouseEnter" MouseLeave="registerLabel_MouseLeave" MouseLeftButtonDown="registerLabel_MouseLeftButtonDown" FontFamily="Calibri" Margin="110,0,110,23" Background="{x:Null}"/>
             <Label Content="Username" VerticalAlignment="Bottom" Height="28" FontFamily="Calibri" FontSize="16" Margin="52,0,0,164" HorizontalAlignment="Left" Width="77"/>
             <Label Content="Password" VerticalAlignment="Bottom" Height="28" FontFamily="Calibri" FontSize="16" Margin="52,0,0,132" HorizontalAlignment="Left" Width="72"/>
-            <Label x:Name="errorBox" Content="" Background="White" FontSize="12" Foreground="#FFCC0000" FontFamily="Calibri" BorderThickness="1" Height="25" VerticalAlignment="Bottom" Margin="51,0,51,98"/>
-
+            <Label x:Name="errorBox" Content="" FontSize="12" Foreground="#FFCC0000" FontFamily="Calibri" BorderThickness="1" Height="25" VerticalAlignment="Bottom" Margin="51,0,51,98"/>
+           
         </Grid>
     </Border>
 </Window>

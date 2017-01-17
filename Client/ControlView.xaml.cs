@@ -111,7 +111,16 @@ namespace FolderBackup.Client
 
         private void buildGraphic()
         {
-            SerializedVersion[] sversions = server.getOldVersions();
+            SerializedVersion[] sversions = null;
+            try
+            {
+                sversions = server.getOldVersions();
+            }
+            catch
+            {
+                UsefullMethods.setLabelAlert("danger", this.errorBox, "No internet connection!Check it and retry");
+                return;
+            }
             this.versions = new FBVersion[sversions.Length];
             int i = 0;
             se.watcher.EnableRaisingEvents = false;
@@ -311,6 +320,7 @@ namespace FolderBackup.Client
             catch
             {
                 UsefullMethods.setLabelAlert("danger", errorBox, "Error with communication! Check your connection!");
+                return;
             }
             System.Diagnostics.Process.Start(filePath);
         }
@@ -394,29 +404,42 @@ namespace FolderBackup.Client
         }
         private void revert_Click(object sender, RoutedEventArgs e)
         {
-            FBVersion lastVers = (FBVersion) this.versions[versions.Length - 1].Clone();
-            FBDirectory dir = lastVers.root;
-            Dictionary<string, List<TreeViewItemFat>> revertItems = new Dictionary<string, List<TreeViewItemFat>>();
-            foreach (TreeViewItemFat el in revertList.Items)
-            {
-                if (!revertItems.ContainsKey(el.relativePath))
+            if (this.versions!=null) {
+                FBVersion lastVers = (FBVersion)this.versions[versions.Length - 1].Clone();
+                FBDirectory dir = lastVers.root;
+                Dictionary<string, List<TreeViewItemFat>> revertItems = new Dictionary<string, List<TreeViewItemFat>>();
+                foreach (TreeViewItemFat el in revertList.Items)
                 {
-                    revertItems[el.relativePath] = new List<TreeViewItemFat>();
+                    if (!revertItems.ContainsKey(el.relativePath))
+                    {
+                        revertItems[el.relativePath] = new List<TreeViewItemFat>();
+                    }
+                    revertItems[el.relativePath].Add(el);
                 }
-                revertItems[el.relativePath].Add(el);                
+                modifyDir(revertItems, dir, dir.Name);
+                se.resetToVersion(lastVers);
+                revertList.Items.Clear();
             }
-            modifyDir(revertItems, dir, dir.Name);
-            se.resetToVersion(lastVers);
-            revertList.Items.Clear();
+            else
+            {
+                MessageBox.Show("There is a problem with connection, please retry to login!", "Error in connection");
+            }   
         }
         private void RevertToVersion_Click(object sender, RoutedEventArgs e)
         {
-            int vIndex = 0;
-            for (; vIndex < versions.Length; vIndex++)
+            if (this.versions != null)
             {
-                if (versions[versions.Length - vIndex-1] == selectedVersion) break;
+                int vIndex = 0;
+                for (; vIndex < versions.Length; vIndex++)
+                {
+                    if (versions[versions.Length - vIndex - 1] == selectedVersion) break;
+                }
+                se.resetPrevoiusVersion(vIndex, versions[versions.Length - vIndex - 1]);
             }
-            se.resetPrevoiusVersion(vIndex,versions[versions.Length - vIndex - 1]);
+            else
+            {
+                MessageBox.Show("There is a problem with connection, please retry to login!", "Error in connection");
+            }
         }
         private void modifyDir(Dictionary<string, List<TreeViewItemFat>> revertItems, FBDirectory dir, string relPath)
         {

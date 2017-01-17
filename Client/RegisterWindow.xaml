@@ -1,16 +1,27 @@
 ﻿<Window x:Class="FolderBackup.Client.RegisterWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="RegisterWindow" Height="245" Width="372" Closing="Window_Closing">
+        Title="RegisterWindow" Height="252" Width="372" Closing="Window_Closing">
     <Grid RenderTransformOrigin="0.5,0.5" Margin="0" Background="White" VerticalAlignment="Top" HorizontalAlignment="Left" Width="364">
-        <Button x:Name="RegisterButton" Content="Register" HorizontalAlignment="Left" Margin="74,171,0,0" VerticalAlignment="Top" Width="90" Click="RegisterButton_Click" FontFamily="Calibri" FontSize="16" Background="White"/>
-        <Button Content="Clear" HorizontalAlignment="Left" Margin="204,171,0,0" VerticalAlignment="Top" Width="90" FontFamily="Calibri" FontSize="16" Background="White"/>
+        <Image x:Name="applicationIcon_png" Margin="0,0,9,10" Source="applicationIcon.png" Stretch="Fill" RenderTransformOrigin="0.5,0.5" Opacity="0.5" HorizontalAlignment="Right" Width="110" Height="109" VerticalAlignment="Bottom">
+            <Image.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-27.808"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Image.RenderTransform>
+        </Image>
+
+        <Button x:Name="RegisterButton" Content="Register" HorizontalAlignment="Left" Margin="74,177,0,0" VerticalAlignment="Top" Width="90" Click="RegisterButton_Click" FontFamily="Calibri" FontSize="16" Background="#CCFFFFFF"/>
+        <Button Content="Clear" HorizontalAlignment="Left" Margin="204,177,0,0" VerticalAlignment="Top" Width="90" FontFamily="Calibri" FontSize="16" Background="#CCFFFFFF"/>
         <Label Content="FolderBackup" HorizontalAlignment="Left" Margin="52,30,0,146" VerticalAlignment="Center" FontFamily="Calibri" FontSize="21" Height="38"/>
-        <TextBox x:Name="usernameTxtBox" HorizontalAlignment="Left" Height="23" Margin="167,82,0,0" VerticalAlignment="Top" Width="157" TextWrapping="Wrap"/>
-        <PasswordBox x:Name="passwordTxtBox" Margin="167,110,0,0" VerticalAlignment="Top" Height="23" HorizontalAlignment="Left" Width="157"/>
+        <TextBox x:Name="usernameTxtBox" HorizontalAlignment="Left" Height="23" Margin="167,82,0,0" VerticalAlignment="Top" Width="157" TextWrapping="Wrap" Background="#CCFFFFFF"/>
+        <PasswordBox x:Name="passwordTxtBox" Margin="167,110,0,0" VerticalAlignment="Top" Height="23" HorizontalAlignment="Left" Width="157" SelectionBrush="#660078D7" Background="#CCFFFFFF"/>
         <Label Content="Username" HorizontalAlignment="Left" Margin="52,77,0,0" VerticalAlignment="Top" Height="28" FontFamily="Calibri" FontSize="16"/>
         <Label Content="Password" HorizontalAlignment="Left" Margin="52,105,0,0" VerticalAlignment="Top" Height="28" FontFamily="Calibri" FontSize="16"/>
-        <Label x:Name="errorBox" Content="" Background="White" FontSize="12" Foreground="#FFCC0000" FontFamily="Calibri" BorderThickness="1" Height="25" VerticalAlignment="Bottom" Margin="52,0,0,49" HorizontalAlignment="Left" Width="273"/>
+        <Label x:Name="errorBox" Content="" FontSize="12" Foreground="#FFCC0000" FontFamily="Calibri" BorderThickness="1" Height="25" VerticalAlignment="Bottom" Margin="52,0,0,45" HorizontalAlignment="Left" Width="273"/>
 
     </Grid>
 </Window>
