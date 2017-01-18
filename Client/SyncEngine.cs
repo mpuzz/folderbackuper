@@ -121,6 +121,7 @@ namespace FolderBackup.Client
             SerializedVersion serV = new SerializedVersion();
             serV.encodedVersion = cv.serialize();
             threadCallback.Invoke(TypeThread.SYNC, StatusCode.WORKING, "Start syncing");
+            FileStream fs = null;
             try { 
                 if (server.newTransaction(serV))
                 {
@@ -133,9 +134,7 @@ namespace FolderBackup.Client
                     }
 
                     int i = 0;
-                    FileStream fs=null;
-                    try
-                    {
+                    
                         foreach (FBFile f in fileToSync)
                         {
                             if (!this.stopSync)
@@ -163,18 +162,12 @@ namespace FolderBackup.Client
                             server.rollback();
 
                         }
-                    }
-                    catch
-                    {
-                        if (fs!=null)
-                        {
-                            fs.Close();
-                        }
-                        server.rollback();
-                    }
+                    this.status = "Idle";
+                
+                    
                     
                 
-                    this.status = "Idle";
+                    
                 
                 }else
                 {
@@ -185,6 +178,18 @@ namespace FolderBackup.Client
             {
                 MessageBox.Show("There is a problem with connection, please retry to login!", "Error in connection" );
                 threadCallback.Invoke(TypeThread.SYNC, StatusCode.ABORTED, "Connection error");
+             
+            }
+            catch
+            {
+                server.rollback();
+            }
+            finally
+            {
+                if (fs != null)
+                {
+                    fs.Close();
+                }
             }
         }
 
@@ -242,16 +247,32 @@ namespace FolderBackup.Client
         public void resetPrevoiusVersion(int vIndex, FBVersion v)
         {
             this.sync();
-            UploadData ud = server.resetToPreviousVersion(vIndex);
-            resetVersion(ud,v);
+            UploadData ud = null;
+            try
+            {
+                ud = server.resetToPreviousVersion(vIndex);
+                resetVersion(ud, v);
+            }
+            catch (System.ServiceModel.CommunicationException e)
+            {
+                MessageBox.Show("There is a problem with connection, please retry to login!", "Error in connection");
+            }
         }
         public void resetToVersion(FBVersion v)
         {
             this.sync();
             SerializedVersion serV = new SerializedVersion();
             serV.encodedVersion = v.serialize();
-            UploadData ud = server.resetToCraftedVersion(serV);
-            resetVersion(ud, v);
+            UploadData ud = null;
+            try
+            {
+                ud = server.resetToCraftedVersion(serV);
+                resetVersion(ud, v);
+            }
+            catch (System.ServiceModel.CommunicationException e)
+            {
+                MessageBox.Show("There is a problem with connection, please retry to login!", "Error in connection");
+            }
         }
         private void resetVersion(UploadData ud,FBVersion v)
         {
