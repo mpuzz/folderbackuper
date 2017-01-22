@@ -412,6 +412,9 @@ namespace FolderBackup.Client
                 FBVersion lastVers = (FBVersion)this.versions[versions.Length - 1].Clone();
                 FBDirectory dir = lastVers.root;
                 Dictionary<string, List<TreeViewItemFat>> revertItems = new Dictionary<string, List<TreeViewItemFat>>();
+                if (revertList.Items.Count==0) {
+                    MessageBox.Show("There are no file to revert in the list please add them!", "List empty");
+                }
                 foreach (TreeViewItemFat el in revertList.Items)
                 {
                     if (!revertItems.ContainsKey(el.relativePath))

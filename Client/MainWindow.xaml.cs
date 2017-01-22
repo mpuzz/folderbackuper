@@ -61,7 +61,11 @@ namespace FolderBackup.Client
             BackupServiceClient server = null;
             try
             {
-                server = logIn(username, password, out token);
+                if (Const<BackupServiceClient>.Instance().get() == null)
+                {
+                    server = logIn(username, password, out token);
+                }
+
             }
             catch (LoginExcpetion ex)
             {
@@ -145,6 +149,12 @@ namespace FolderBackup.Client
                 throw new LoginExcpetion("No internet connection!Check it and retry");
             }
             return server;
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Environment.Exit(0);
+
         }
     }
 }

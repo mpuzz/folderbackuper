@@ -111,12 +111,19 @@ namespace FolderBackup.Client
         public ThreadStatus threadCallback;
         private void sync()
         {
-                cv = (FBVersion)vb.generate();
-            
+           
             String dirPath = conf.targetPath.get();
             if (dirPath == null || !Directory.Exists(dirPath))
             {
                 throw new DirectoryNotFoundException("Directory in configuration is not valid");
+            }
+            try
+            {
+                cv = (FBVersion)vb.generate();
+            }catch(Exception e)
+            {
+                MessageBox.Show(e.Message + "\nThe application will be closed", "Unexpected error");
+                Environment.Exit(0);
             }
             SerializedVersion serV = new SerializedVersion();
             serV.encodedVersion = cv.serialize();

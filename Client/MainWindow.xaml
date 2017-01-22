@@ -1,7 +1,7 @@
 ﻿<Window x:Name="LoginWindows" x:Class="FolderBackup.Client.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Login" Height="276" Width="378" ResizeMode="NoResize">
+        Title="Login" Height="276" Width="378" ResizeMode="NoResize" Closing="Window_Closing">
     <Window.Resources>
         <Color x:Key="Color1">#FFD7E4F2</Color>
     </Window.Resources>
