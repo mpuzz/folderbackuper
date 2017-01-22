@@ -77,10 +77,10 @@ namespace FolderBackup.Client
             watcher.Created += new FileSystemEventHandler(OnChanged);
             watcher.Deleted += new FileSystemEventHandler(OnChanged);
             watcher.Renamed += new RenamedEventHandler(OnChanged);
+            watcher.IncludeSubdirectories = true;
             watcher.Path = dirPath;
             // Begin watching.
             watcher.EnableRaisingEvents = true;
-            //Directory.SetCurrentDirectory(dirPath);
             vb = new FBVersionBuilder(dirPath);
 
         }
@@ -143,9 +143,8 @@ namespace FolderBackup.Client
                                 i++;
                                 FBFileClient cf = FBFileClient.generate(f);
                                 UploadData cedential = server.uploadFile();
-                                fs = new FileStream(cf.FullName, FileMode.Open);
-                                UsefullMethods.SendFile(cedential.ip,cedential.port,cedential.token,fs);
-                                fs = null;
+                                UsefullMethods.SendFile(cedential.ip,cedential.port,cedential.token, new FileStream(cf.FullName, FileMode.Open));
+                           
                             }else {
                                 break;
                             }
@@ -183,13 +182,6 @@ namespace FolderBackup.Client
             catch
             {
                 server.rollback();
-            }
-            finally
-            {
-                if (fs != null)
-                {
-                    fs.Close();
-                }
             }
         }
 
@@ -281,7 +273,7 @@ namespace FolderBackup.Client
 
             String pathFiles;
             List<Instruction> instructionList = UsefullMethods.ExtractInstructions(filename, out pathFiles);
-
+            instructionList.Sort((emp1, emp2) => emp1.cmd.CompareTo(emp2.cmd));
             foreach (Instruction i in instructionList)
             {
                 ExecuteInstruction(i, pathFiles);
@@ -313,7 +305,7 @@ namespace FolderBackup.Client
                     {
                         Directory.CreateDirectory(dstPath);
                     }
-                    File.Copy(path + "\\" + i.src, dirPath + "\\" + i.dst);
+                    File.Copy(path + "\\" + i.src, dirPath + "\\" + i.dst,true);
 
                     break;
                 default:

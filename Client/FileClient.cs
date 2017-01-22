@@ -48,7 +48,11 @@ namespace FolderBackup.Client
             FileInfo fi = new FileInfo(path);
             if (fi.Exists)
             {
-                return fi;
+                FBFileBuilder fb=new FBFileBuilder(path);
+                FBFile f = (FBFile) fb.generate();
+                if (f.hash==file.hash) {
+                    return fi;
+                }
             }
 
             foreach (DirectoryInfo dir in dinfo.GetDirectories())

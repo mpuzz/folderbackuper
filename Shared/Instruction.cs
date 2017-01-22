@@ -22,6 +22,6 @@ namespace FolderBackup.Shared
 
     public enum InstructionType
     {
-        COPY, NEW, DELETE
+        COPY=0,DELETE=1, NEW=2
     }
 }

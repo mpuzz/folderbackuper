@@ -29,7 +29,7 @@ namespace FolderBackup.Client
         FBVersion[] versions;
         SyncEngine se = SyncEngine.Instance();
 
-        const string TIMESTAMP_FORMAT = "MMM_dd_yyyy_HH_MM_ss";
+        const string TIMESTAMP_FORMAT = "MMM_dd_yyyy_HH_mm_ss";
 
         private static ControlView instance;
         private FBVersion selectedVersion;
@@ -130,7 +130,7 @@ namespace FolderBackup.Client
                 versions[i] = FBVersion.deserialize(v.encodedVersion);
                 System.Windows.Controls.Button button = new System.Windows.Controls.Button();
                 button.Name = versions[i].timestamp.ToString(TIMESTAMP_FORMAT);
-                button.Content = versions[i].timestamp.ToString("MMM, dd yyyy HH:MM");
+                button.Content = versions[i].timestamp.ToString("MMM, dd yyyy HH:mm");
                 button.Click += versionClick;
                 button.MinWidth = 200;
                 button.MinHeight = 22;
@@ -293,9 +293,9 @@ namespace FolderBackup.Client
         }
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            this.Hide();
             ControlView.instance = null;
             se.watcher.EnableRaisingEvents = true;
+            this.Hide();
         }
         private void sync_Click(object sender, RoutedEventArgs e)
         {
@@ -316,13 +316,17 @@ namespace FolderBackup.Client
             try
             {
                 filePath = se.getFile((FBFile)seletedItem.item);
+                System.Diagnostics.Process.Start(filePath);
+            }
+            catch (System.ServiceModel.CommunicationException)
+            {
+                UsefullMethods.setLabelAlert("danger", errorBox, "Error with communication! Check your connection!");
             }
             catch
             {
-                UsefullMethods.setLabelAlert("danger", errorBox, "Error with communication! Check your connection!");
-                return;
+                UsefullMethods.setLabelAlert("danger", errorBox, "No file selected!");
+
             }
-            System.Diagnostics.Process.Start(filePath);
         }
 
         private async void flashItem(TreeViewItemFat item)
@@ -469,9 +473,9 @@ namespace FolderBackup.Client
             {
                 foreach (TreeViewItemFat tv in revertItems[relPath])
                 {
-                    if (dir.content.ContainsKey(tv.Name))
+                    if (dir.content.ContainsKey(tv.item.Name))
                     {
-                        dir.content.Remove(tv.Name);
+                        dir.content.Remove(tv.item.Name);
                     }
                     dir.addContent(tv.item);
 

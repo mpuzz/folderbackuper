@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Net.Security;
 using System.IO.Compression;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Windows;
 
 namespace FolderBackup.Shared
 {
@@ -146,9 +147,14 @@ namespace FolderBackup.Shared
                 ssl.Write(UsefullMethods.GetBytesFromString(token));
                 fstream.CopyTo(ssl);
                 ssl.Close();
+            }
+            catch {
+                MessageBox.Show("There is a problem with connection, please retry to login!", "Error in connection");
+            }
+            finally
+            {
                 fstream.Close();
             }
-            catch { }
         }
 
         public static void ReceiveFile(String ip, UInt16 port, String token, String path)
